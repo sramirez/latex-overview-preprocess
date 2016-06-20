@@ -1,0 +1,330 @@
+%% 
+%% Copyright 2007, 2008, 2009 Elsevier Ltd
+%% 
+%% This file is part of the 'Elsarticle Bundle'.
+%% ---------------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'Elsarticle Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+
+%% Template article for Elsevier's document class `elsarticle'
+%% with numbered style bibliographic references
+%% SP 2008/03/01
+
+\documentclass[preprint,12pt]{elsarticle}
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[authoryear,preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+%% For including figures, graphicx.sty has been loaded in
+%% elsarticle.cls. If you prefer to use the old commands
+%% please give \usepackage{epsfig}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[hyphens]{url}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{array}
+\usepackage{booktabs}
+
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{subfig}
+
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers.
+%% \usepackage{lineno}
+
+\journal{Knowledge Based Systems}
+
+\begin{document}
+
+\begin{frontmatter}
+
+%% Title, authors and addresses
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for theassociated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for theassociated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for theassociated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+\title{A Survey on Streaming Data Preprocessing}
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{}
+%% \address[label1]{}
+%% \address[label2]{}
+
+\author[ugr]{S. Ram\'{i}rez-Gallego\corref{cor1}}
+\ead{sramirez@decsai.ugr.es}
+
+\author[ugr]{S. Garc\'ia}
+\ead{salvagl@decsai.ugr.es}
+
+\author[pwr]{M. Wo\'zniak}
+\ead{michal.wozniak@pwr.edu.pl}
+
+\author[ugr]{F. Herrera}
+\ead{herrera@decsai.ugr.es}
+
+\address[ugr]{Department of Computer Science and Artificial Intelligence, CITIC-UGR, University of Granada, 18071 Granada, Spain}
+	
+\address[pwr]{Department of Computer Science, Wroc\l{}aw University of Technology, Wyb. Wyspianskiego 27, 50-370 Wroc\l{}aw, Poland}
+
+\cortext[cor1]{Corresponding author}
+
+\begin{abstract}
+%% Text of abstract
+
+\end{abstract}
+
+\begin{keyword}
+%% keywords here, in the form: keyword \sep keyword
+
+%% PACS codes here, in the form: \PACS code \sep code
+
+%% MSC codes here, in the form: \MSC code \sep code
+%% or \MSC[2008] code \sep code (2000 is the default)
+
+machine learning \sep data streams \sep data preprocessing
+
+\end{keyword}
+
+\end{frontmatter}
+
+%% \linenumbers
+
+%% main text
+\section{Introduction}
+\label{sec:intro}
+
+
+
+\section{Data streaming and concept drift}
+
+
+\section{Feature selection for data streaming}
+\label{sec:fs}
+
+Many feature selection algorithms that deal with streaming data have been proposed in the literature, most of them are naturally incremental methods but others can process streams in online way. Firstly, we would like to distinguish between the two types of online feature selection methods in the literature. Some feature selection methods consider that feature arrive one by one while feature vectors (examples) are always available~\citep{wu10, eskandari16}. In constrast, other online methods assume that are the instances which arrive sequentially and the feature set can change or not. The last approach is more natural in real-world problems so we will focus on this topic. 
+
+In streaming learning, the feature space can also be affected by the changing environment. \textbf{Feature drifts} occur whenever the relevance of a given attribute $A_i$ changes over time when new instances arrive at the system~\cite{barddal15}. Let $rel(A_i, t_i)$ be the relevance function that determines the importance of $A_i$ in $t_i$ time of the stream. There exits a feature drift iff the relevance of feature $A_i$ changes between $t_j$ and $t_k$ timestamps.
+
+\begin{equation}\label{eq:rel}
+\exists t_j, \exists t_k, t_j < t_k, rel(A_i, t_j) \neq rel(A_i, t_k)
+\end{equation}
+
+As in other concept drifts, changes in relevance enforce algorithms to discard or adapt the model already learned by removing the the most irrelevant features in the new scenario, as well as including the most relevant ones (dynamic feature selection)~\cite{nguyen12}. As changes in relevance directly affects the decision boundaries, feature dritf can be seen as a specific type of real concept drift which is independent of fluctuations in the data distribution $P[x]$. 
+
+As the set of selected features evolves over time, it is likely that the feature space in test instances be distinct from the currenct selection. Therefore, when a new instance is classified, we need to perform a conversion between feature spaces for homogeneization purposes~\cite{masud10}. The type of conversion to consider are the followings: 
+\begin{itemize}
+	\item Lossy Fixed (Lossy-F): the same feature set is used for the whole stream. It is generated from the first batch. All the following instanes (training and test) will be mapped to this instance, resulting in a clear loss in future importance.
+	\item Lossy Local (Lossy-L): a new feature space is considered for each new training batch. Test instances are thus mapped to the traininig space in each iteration. This conversion is also troublesome because important features in test are skipped.
+	\item Lossless Homogenizing (Lossless): Lossless is similar to the previous case, except that here the feature space in the test set is also considered in the conversion. There is thus a homogeneization between spaces, for example, by unifying both spaces and padding with zeros any feature not present in the other set. This conversion is the best alternative as it considers all spaces and times.
+\end{itemize}
+
+In the followings, we enumerate those algorithms that address the streaming feature selection problem. Table~\ref{tab:fs} details the type of selection method and space conversion performed by each algorithm.
+
+\begin{itemize}
+	\item Katakis et al.~\cite{kata05} was among the first to introduce the problem of a dynamic feature space over time in data streams. They proposed a technique that involves a feature ranking (filter) method to select relevant features. As the imporance score of each feature can be measured using many cumulative functions like information gain, $\chi^2$ or mutual information; it is a versatile solution to rank features.
+	\item Carvalho et al.~\cite{carva06} proposed Extremal Feature Selection (EFS), an online feature selection method that uses the weights computed by the online classifier (Modified Balance Winnow) to measure the relevance of features. This importance is computed as the absolut difference between the positive and negative weights for each feature.
+	\item Wenerstrom and Giraud-Carrier~\cite{wener06} proposed a dynamically-sized ensemble algorithm (called FAE) composed of learners with different feature space sets. Learners are created when the top features changes over a threshold or when the ensemble's performance degrades enough. This method is also based on a feature ranking method that cumulates $\chi^2$-based scores. FAE performs a Lossy-L conversion between spaces. According to the author's experiments, FAE performs better than the Katakis's approach. %Lossy-L conversion
+	\item Masud et al.~\cite{masud10} proposed a data stream classification technique (DXMiner), which uses the deviation weight measure to deal with the feature ranking and selection problem in a single-pass fashion. Furthermore, DXMiner naturally address the problem of novel classes (concept-evolution) by building a decision boundary around the training data. In contrast to previous methods, DXMiner uses lossless conversion that exploits all the available features which is useful to detect novel classes. To select features in the test feature space set, DXMiner uses a unsupervised technique (e.g., the highest frequency).
+	\item Nguyen et al.~\cite{nguyen12} use an ensemble technique based on windowing to detect feature drifts. The algorithm is based on a ensemble of classifiers, where each classifier has its own feature set. If a drift is detected, the ensemble is updated with a new classifier together with a new feature subset; otherwise, each classifier is updated accordingly. Fast Correlation-Based Filter (FCBF) is the feature selection method used in this method. FCBF heuristically applies a backward selection technique with a sequential search strategy to remove irrelevant and redundant features.
+	\item In~\cite{gomes14}, the authors propose an algorithm to mine recurring concepts (called MReC-DFS). Here, the same online selector method proposed in~\cite{kata05} is used. Instead of selecting a fixed number of features, they propose to use either a fixed threshold or a adaptative one based on percentiles. They also compare the effects of using different space conversions~\cite{masud10} (like Lossy-F, Lossy-L or Lossless).
+	\item Wang et al.~\cite{wang14} proposed an $\varepsilon$-greedy online feature selection method (called OFS) based on a classical technique that makes a trade-off between exploration and exploitation of features. The algorithm spends $\varepsilon$ trials on exploration by randomly choosing $N$ attributes from the whole set of attributes, and the remaining 1-$\varepsilon$ of trials on exploitation by choosing the $N$ attributes for which the linear classifier has nonzero values. %This selection method also presents a lossy adaptation since the feature space of the test test is not considered in the selection process.
+In this work, the concept of feature drift is not addressed explicitly, and there is no comparison with previous works in this topic.
+\end{itemize}
+
+\begin{table}[!htp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scriptsize
+\caption{Summary descripion of streaming feature selection methods. Information about the type of selector (wrapper or filter) and space conversion used is included.}
+\label{tab:fs}
+\begin{tabular}{ lcc }
+\toprule
+{\bf Method} & {\bf Type of selector} & {\bf Space conversion}\\
+\midrule
+Katakis's method~\cite{kata05} & Filter ($\chi^2$) & Lossy-L\\
+EFS~\cite{carva06} & Wrapper (classifier's weights) & Lossy-L\\
+FAE~\cite{wener06} & Filter ($\chi^2$) & Lossy-L\\
+DXMiner~\cite{masud10} & Wrapper (deviation weight + unsupervised) & Lossless\\
+HEFT-Stream~\cite{nguyen12} & Filter (FCBF) & Lossy-F, Lossy-L, Lossless\\
+MReC-DFS~\cite{gomes14} & Filter ($\chi^2$) & all\\
+OFS~\cite{wang14} & Wrapper (classifier's weights) & Lossy-L\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%  \begin{tabular}{lcc}
+%  \toprule {\bf Method} & {\bf Type of selector} & {\bf Space conversion}\\
+%\midrule
+%Katakis's method~\cite{kata05} & Filter ($\chi^2$) & -\\
+%EFS~\cite{carva06} & Wrapper (classifier weights) & -\\
+%FAE~\cite{wener06} & Filter ($\chi^2$) & Lossy-L\\
+%DXMiner~\cite{masud10} & Wrapper (deviation weight + unsupervised) & Lossless\\
+%HEFT-Stream~\cite{nguyen12} & Filter (FCBF) & -\\
+%MReC-DFS~\cite{gomes14} & Filter ($\chi^2$) & all\\
+%OFS~\cite{wang14} & Wrapper (classifier weights) & -\\
+%	\bottomrule
+%  \end{tabular}
+
+%Finally, in~\cite{shar06}, the authors presented an algorithm for efficiently performing threshold function queries to manage \textbf{distributed data streams}. This function queries are typically used for feature selection. The algorithms are based on a geometric analysis of the problem. Upon initialization, the algorithm collects frequency counts from all the streams, and calculate the initial result of the query. In addition, a numerical constraint on the data received on each individual stream is defined. As data arrives on the streams, each node verifies that the constraint on its stream has not been violated. The geometric analysis of the problem guarantees that as long as the constraints on all the streams are upheld, the result of the query remains unchanged, and thus no communication is required. If a constraint on one of the streams is violated, new data is gathered from the streams, the query is reevaluated, and new constraints are set on the streams. 
+
+\section{Instance selection for data streaming}
+
+Lazy learning algorithms have been broadly used to address several problems in machine learning. However, case-bases naturally deteriorate and grow with usage over time, also affecting data distribution and decision boundaries underlying data (concept drift).
+
+In this scenario, past preserved cases that belong to a previous concept may degrade the performance of the learner if a new concept appears. Likewise, new instances that represents a new concept may be classified as noise and removed by the edition mechanism, because they disagree with past concepts. 
+
+Some enhancement and maintenance should be thus performed on case-bases through the usage of shopisticated instance selection algorithms. Nevertheless, most of these techniques assume stationariaty of data and ignore the concept drift phenomenon. Next, we enumerate those instance selection techniques that explicitily address concept drift when selecting instances:
+
+\begin{itemize}
+	\item Instance-Based learning Algorithm 3 (IB3)~\cite{aha91} is one of the first attempts to deal with concept drift. It is based on accuracy and retrieval frequency measures (per instance). By means of a confidence interval test, IB3 decides if a case should be added to the case-base or it needs to wait until its insertion be appropiate. 
+The removal of a case is performed if its accuracy is below (in a degree) its class's frequency. Due to IB3 defers the inclusion of examples, it is only suitable for gradual concept drift. 
+	\item The Locally Weighted Forgetting (LWF) algorithm~\cite{salga93} is an instance weighting technique based on k-nearest neighbors (k-NN). In LWF, those cases with a weight below a threshold are removed. This method has shown a good performance for both gradual and sudden concept drift. LWF algorithm has been criticized by its lower asymptotic classification in static enviroments and by its weighting scheme typically causes over-fitting~\cite{klinken04}.
+	\item Salganicoff~\cite{salga97} designed the Prediction Error Context Switching (PECS) algorithm, which is designed to work in both dynamic and static environments. PECS algorithm is based on the case's accuracy measure used in IB3 and adopts the same confidence test. In order to introduce the time factor in the selection decisions, PECS only consider the latest predictions to compute accuracy. Furthermore, PECS inmediately add new cases to the base to expedite the slow adaptation process. Finally, PECS disables cases instead of permanently deleting them in order to include them again if their accuracy get high. It is argued in~\cite{berin07} that the main drawbacks of PECS are its high memory usage and its slow removal process (new instances are retained first).
+	\item Delany et al.~\cite{delany05} proposed an drift control mechanism with two levels. The method in the fist level is an hybrid of two competence-based editing methods\footnote{Basic concepts about competence models can be reviewed in~\cite{smyth95}}: Blame Based Noise Removal (BBNR) and Conservative Redundancy Reduction (CRR). BBNR is aimed at deleting those cases whose removal do not imply coverage loss, whereas CRR selects those cases with the smallest coverage and that are missclassified. Note that both methods are designed for static problems, which can cause some problems like the removal of novel concepts when gradual drift appears, and the inability of removing small groups of cases where examples covers each other but missclassifies all the surrounding neighbors. Furthermore, BBNR do not keep the competence model up-to-date, which can cause many problems in the evaluation phase. Finally, in the second level, the algorithm periodically reselected features to completely rebuild a CBR system.
+	\item Instance-Based Learning on Data Streams (IBL-DS)~\cite{berin07} algorithm is presented as the first solution that considers both time and space factars to controls the shape and size of the case-base. The main rule in IBL-DS is as follows: every neighbor in a test range is removed if the new case's class dominates in this group. IBL-DS also introduces the usage of an explicit drift detection method developed by Gama~\cite{gama04}, which determines when removing a fixed number of instances considering space and time factors. The number of cases to remove is computed considering the minimum error rate and the error of the newest classification stages. On the other hand, IBL-DS controls the size of the case-base by removing the oldest instances. However, the time-based removal strategy implemented by IBL-DS has been criticized because some old but relevant instances can be eliminated.
+	\item FISH algorithms~\cite{zlio11} are also based on a linear combination of time and space distances. The idea behind these algorithms is to dynamically select a set of relevant examples for training each model in the ensemble. Three variants of FISH are included in the original work. In FISH1, the training size is fixed at the beginning. FISH2 selects the best training size according to the accuracy (through leave-one-out cross validation). FISH3 also weights time and space factors by using a different loop of cross validation.	
+	\item Lu et al.~\cite{lu16} propose a case-base editing technique based on competence preservation and enhancement~\cite{smyth95}. Their solution consists of three stages: the first one compares the distribution between two windows in order to dectect if there is a drift or not. Apart from detecting the drift, this method also limit the area where the distribution changes most. Afterwards, the Noise-Enhanced Fast Context Switch (NEFCS) method is applied. NEFCS examine all new cases and determine whether they are noise (enhancement). However, only the noisy cases that lie outside the detected competence areas are removed, as they may be part of a novel concept. Finally, Stepwise Redundancy Removal (SRR) method is aimed at controlling the size of the case-base (preservation). SRR removes redundant examples recursively until case-base coverage gets deteriorated.
+
+\end{itemize}
+
+
+\begin{table}[!htp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scriptsize
+\caption{Summary descripion of streaming instance selection methods. Information about the type of selection and whether drift detection is used or not.}
+\label{tab:fs}
+\begin{tabular}{ lcc }
+\toprule
+{\bf Method} & {\bf Type of selector} & {\bf Drift detection}\\
+\midrule
+IB3~\cite{aha91} & case accuracy & no\\
+LWF~\cite{salga93} & weighting & no\\
+PECS~\cite{salga97} & case accuracy & no\\
+BBNR+CRR~\cite{masud10} & competence & no\\
+IBL-DS~\cite{berin07} & time-space distance & yes\\
+FISH~\cite{gomes14} & time-space distance & no\\
+NEFCS+SRR~\cite{lu16} & competence & yes\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%
+%%Despite this, the PECS algorithm differs from IB3 in several ways: First, any new observation is immediately included in the case-base. Second, the PECS algorithm calculates a case's accuracy based only on its latest $l$ predictions. Third, rather than permanently deleting a case as noise, the PECS algorithm deactivates it and tracks its accuracy for reactivation purposes. Experiments show that the algorithm improves robustness over IB3 on time-varying tasks at the cost of increased storage requirements. However, PECS was originally designed to improve performance in concept drift problems, where noise along with incoming observations was not considered. As a result, all noisy observations are retained first and can only be removed with a deferment. PECS has also been criticized for its unlimited memory assumption~\cite{berin07}, by only disabling cases but not deleting them. 
+%
+%%Delany et al.~\cite{delany05} suggested a two-level learning for handling concept drift. In level-1, they used a Competence-Based Editing (CBE) method, which is a hybrid of Blame Based Noise Removal (BBNR) and Conservative Redundancy Reduction (CRR) to manage the case-base periodically. Specifically, BBNR analyzes all cases that have contributed to misclassification and removes cases if their deletion results in no coverage loss; CRR repeatedly selects a case with the smallest coverage set that cannot be correctly solved. 
+%
+%%However, a hybrid of two CBM methods designed for a static environment does not guarantee effective learning under concept drift. In the worst case, novel concepts can be consistently discarded, especially with gradual concept drift. In addition, the BBNR algorithm has difficulties in removing small groups of noisy cases. For example, two noisy cases that have each other in their coverage sets can correctly classify each other but can cause the misclassification of all other nearby cases; these small groups of noisy cases can never be removed by the BBNR, even though they continue to provide incorrect classification results. This phenomenon can be caused by outdated cases when concept drift occurs. 
+%
+%Last but not least, BBNR neglects the competence model maintenance issue. Referring to an ill-matched competence model may lead to the mistaken preservation of noisy cases, i.e., if we have previously removed a noisy case $c$ that happens to be a member of the coverage set $c$ that we are currently considering. If we do not keep the competence model up-to-date, $c$ will still be considered even though we know it is a noisy case. In level-2 learning, Delany et al. periodically reselected features to completely rebuild a CBR system. %Level-2 learning~\cite{delany05} is beyond the scope of a case-base editing method, but it is a model rebuilding strategy that can be plugged into any instance selection technique. Later studies conducted by Delany and Bridge~\cite{delany07} suggested a feature-free distance measure which showed further improvement in accuracy on the same datasets in their experiments.
+%
+%Beringer and H\"ullermeier~\cite{berin07} presented an Instance-Based Learning on Data Streams (IBL-DS) algorithm that autonomously controls the composition and size of the case-base. This IBL-DS algorithm is based on three modification rules: 1) when the size of the case-base exceeds its limit, the oldest instance will be removed; 2) when concept drift is reported using Gama's detection method~\cite{gama04}, a large number of instances will be deleted in a spatially uniform but temporally skewed way. The number of cases to be removed depends on the discrepancy between the minimum error rate and the error rate of the 20 most recent classifications; 3) for every retained new case whose class dominates in a test range, all neighbors in a candidate range that belong to a different class will be removed. 
+%
+%Although Beringer and H\"ullermeier's method is instructive in that it differentiates its instance selection strategy based on whether concept drift is reported, their instance deletion strategy might be difficult to implement in problem domains such as spam filtering where all features may be binary. Removing cases temporally may also result in loss of case-base competence, e.g., deleting rare but correct cases.
+%
+%In~\cite{zlio11}, the authors invented a family of training set formation methods named FISH (uniFied Instance Selection algoritHm) based on ensembles of classifiers. The FISH family dynamically selects a set of relevant instances as the training set for the current target instance. The key concept of the FISH family is to linearly combine distances in time and feature space for training set selection. It includes three modifications: FISH1, FISH2 and FISH3. In FISH1, the size of a training set is fixed and set in advance. FISH2, which is considered to be central to the family, varies the size by selecting a training set that achieves the best accuracy based on leave-one-out cross validation. In FISH3, the relative importance of time and space distance is determined through an additional loop of cross validation. Although the FISH family is reported to be capable of cooperating with any base classifier, the validation set is chosen based on nearest neighbors to the current target instance. 
+%
+%Lu et al.~\cite{lu16} propose a case-base editing technique based on competence preservation and enhancement~\cite{smyth95}. Their solution consists of three modules: 1) competence-based drift detection, which compares the case distribution between two sliding windows of recent cases. When concept drift is detected, it also identifies the competence area where the distribution changes most significantly; 2) Noise-Enhanced Fast Context Switch (NEFCS), which enhances the system's learning capacity under concept drift; 3) Stepwise Redundancy Removal (SRR) method which controls the size of the case-base to tackle the performance issue.
+%
+%Other research discusses the cost and availability of new labeled training data and proposes methods for handling concept drift with limited labeled instances~\cite{huang07, linds10, linds12}.
+%
+
+
+\section{Discretization for data streaming}
+
+Discretization, like other techniques, is also affected by changes in data distribution. Number and structure of discretization intervals may change over time as statitionary is not guaranteed in streaming environments. Therefore, if there appears a drift in distribution it  may be desirable that intervals also changes following the drift.
+
+Histograms computation (equal-frequency) can be considered as one of the first technique in dealing with incremental discretization for streaming. By using the quantiles as cut points, we can partition the feature space in equal-frequency intervals. Estimation of quantiles in streams of data have been studied in depth in the literature, in both forms: approximate~\cite{ben10, webb14} and exact~\cite{gupta03, guha09}. Equal-width discretizer is another simple discretizer which only requires to know the minimum and maximum in a given feature and the number of intervals. The main drawback of these unsupervised techniques is that require records in stream arrive in random order, which is false in many learning problems. 
+
+Another important requirement to consider is that some incremental algorithms need to maintain the same set of cut points (number and meaning) over time~\cite{webb14}. That is the case of most discriminative learning algorithms. For these algorithms, a equal-width or equal-frequency discretizer could fit as both defines as input parameter the number of bins and often maintain the meaning of intervals. On the other hand, statistic algorithms, like Naive Bayes, does not require the preseervation of intervals during the subsequent predictive phase, but only to save some statistics for the current discretization scheme. 
+
+According to~\cite{gama06}, one of the main problems of unsupervised discretizers is the necessity of defining the number of bins. This definition by rule (e.g., Sturges' rule) or by exploratory analysis is no longer possible in the present days where the number of instances is too large. Trying different number of bins is either possible in streaming environments. 
+
+Here, we enumerate those alternatives focused on supervised discretization:
+
+
+Gama et al.~\cite{gama06} presented the Partition Incremental Discretization algorithm (PiD). This algorithm is composed by two layers. The first layer simplifies and summarizes the data; the second layer constructs the final histogram. The first layer is initialized with using a equal-width strategy. Whenever the counter of an interval is above a user defined threshold, a split operator triggers. The second layer merges the set of intervals defined by the first layer whenever it is necessary. Any discretization algorithm can be used in this layer. The input for this discretizer will be the output of the first one. 
+
+Related to equal-frequency discretization, Lu et al.~\cite{lu06} presented the Incremental Flexible Frequency Discretization (IFFD) algorithm. This method defines a range $[minBinsize, maxBinsize)$ instead of a strict number of quantiles. The split \& merge process is described as follows: if the updated interval's frequency
+reaches maxBinsize and the resulting frequencies are below $minBinSize$, FFID splits the interval into two partitions. If not, there is no split and the updating process continues. By this means, IFFD makes the update process local, affecting a minimum number of intervals and associated statistics.
+
+%Ben-Haim et al.~\cite{ben10}, presented an incremental and online discretization for decision trees. Their algorithm is based on three methods: update: add a new example. It can be done by inserting the new example directly in an existing histogram or create a new bin with it and then do a merge; merge: join two bins into only one; uniform: use a trapezoid method to build the final Equal Frequency bins. This method has a low computational requirement and is incremental but it introduces some errors. In case of skewed distributions the authors recommend to use bound error algorithms.
+
+In~\cite{lehti12}, the authors proposed an online version of ChiMerge. This online version maintains the O($nlog(n)$) time requirement of the batch version of ChiMerge. However, the price that needs to be paid is maintaining some data structures, including a binary tree for the observed values. Maintaining all these data structures implies that the space requirement can turn out to be prohibitive in some data stream scenarios. Moreover, in order to guarantee equal discretization results, they use a window-based approach instead of an up-to-date evaluation process.
+
+
+\section*{Acknowlegments}
+
+This work is supported by the Spanish National Research Project TIN2012-37954, TIN2013-47210-P and TIN2014-57251-P, and the Andalusian Research Plan P10-TIC-6858, P11-TIC-7765 and P12-TIC-2958. S. Ram\'irez-Gallego holds a FPU scholarship from the Spanish Ministry of Education and Science (FPU13/00047).
+
+%% The Appendices part is started with the command \appendix;
+%% appendix sections are then done as normal sections
+%% \appendix
+
+%% \section{}
+%% \label{}
+
+%% If you have bibdatabase file and want bibtex to generate the
+%% bibitems, please use
+%%
+\bibliographystyle{elsarticle-num} 
+\bibliography{biblio}
+
+%% else use the following coding to input the bibitems directly in the
+%% TeX file.
+
+%\begin{thebibliography}{00}
+%
+%%% \bibitem{label}
+%%% Text of bibliographic item
+%
+%\bibitem{}
+%
+%\end{thebibliography}
+\end{document}
+\endinput
+%%
+%% End of file `elsarticle-template-num.tex'.
