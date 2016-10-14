@@ -314,18 +314,32 @@ Online ChiMerge~\cite{lehti12} & merge & window\\
 
 %Ben-Haim et al.~\cite{ben10}, presented an incremental and online discretization for decision trees. Their algorithm is based on three methods: update: add a new example. It can be done by inserting the new example directly in an existing histogram or create a new bin with it and then do a merge; merge: join two bins into only one; uniform: use a trapezoid method to build the final Equal Frequency bins. This method has a low computational requirement and is incremental but it introduces some errors. In case of skewed distributions the authors recommend to use bound error algorithms.
 
-\section*{Experimental Framework}
+\section*{Experiments}
 
+In this section we evaluate the usefulness and performance of the proposals presented before from different perspectives:
+
+\begin{itemize}
+	\item Effectiveness: measured as the number of correctly classified instances divided by the total number of instances in the training set (accuracy).
+	\item Performance: measured as the total time spent by the algorithm in the reduction phase. This phase is usually performed before the learning phase, although sometimes it is performed simultaneously.
+	\item Reduction rate: measured as the amount of information reduced with respect to the original set (in percentage). For selection methods, it is related to the number of rows/columns removed, whereas for discretization, it is related to the degree of simplification in the feature spaces.
+\end{itemize} 
+
+\subsection{Experimental framework: datasets, methods and configurations}
+
+We evaluate the different proposals by grouping them in three different experimental environments according to their preprocessing task. The order followed is: feature selection, instance selection, and finally, discretization.
+
+Table~\ref{tab:datasets} shows the complete list of artificial/real datasets, used in our experiments to assess usefulness and performance of preprocessing algorithms. Artificial stream datasets have been generated using MOA benchmark, aiming at providing a wide range of drifting environments --blips, sudden and gradual, among others-- to test reduction algorithms. Each artificial dataset has been created using different combinations of generators and parameters. For a complete description of datasets and associated code, please refer to our GitHub repository\footnote{\url{https://github.com/sramirez/MOAReduction}}. 
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
 \centering
 \scriptsize
-\caption{Summary description for classification datasets}
+\caption{Relevant information about classification datasets. For each
+element, the number of instances evaluated (\#Inst.), the number of attributes (\#Atts.) (which ones are numerical (\#Num.) and which ones nominal (\#Nom.)), the number of classes (\#Cl), and whether the dataset is artificially generated or not (artificial) are shown.}
 \label{tab:datasets}
 \resizebox{0.75\textwidth}{!}{
   \begin{tabular}{|l||c||c||c||c||c||c|}
-  \hline {\bf Data Set} & {\bf \#Ex.} & {\bf \#Atts.} & {\bf \#Num.} & {\bf \#Nom.} &{\bf \#Cl.} & {\bf ?artificial}\\
+  \hline {\bf Data Set} & {\bf \#Inst.} & {\bf \#Atts.} & {\bf \#Num.} & {\bf \#Nom.} &{\bf \#Cl.} & {\bf artificial}\\
   \hline
 \textit{blips} & 500,000 & 20 & 20 & 0 & 4 & yes\\ 
 \textit{fast\_sudden\_recurring} & 500,000 & 10 & 5 & 5 & 6 & yes\\ 
@@ -356,6 +370,14 @@ Online ChiMerge~\cite{lehti12} & merge & window\\
 }
 \end{table}
 
+Real datasets come from different sources. \textit{airlines}, \textit{elecNormNew}, \textit{poker-lsn}, and \textit{covtypeNorm} can be found in MOA's streams repository. \textit{spam\_data}, \textit{usenet1}, \textit{usenet2}, and \textit{usenet3} are mail datasets for text mining which suffers from concept drift\footnote{\url{http://mlkd.csd.auth.gr/concept_drift.html}}. \textit{spambase} is a collection of e-mails classified as spam collected from different users~\cite{bache13}. \textit{kddcup\_10}, \textit{spam\_nominal} (SpamAssasin), and \textit{usenet\_recurrent} were collected by the professor Gama and his research group KDUS\footnote{\url{http://www.liaad.up.pt/kdus/products/datasets-for-concept-drift}}. Last dataset (\textit{power\_supply}) comes from Stream Data Mining Repository\footnote{\url{http://www.cse.fau.edu/~xqzhu/stream.html}}, and contains power supply registers collected hourly of an electricity company.
+
+Not all datasets in this list have been considered for every experiment, as each algorithm has its particularities and conditions. For instance, most of feature selectors require discrete features as they are based on mutual information. However, all MOA generators~\cite{bifet10} only generate datasets with continuous attributes. Thus, the final election of datasets and any detail concerned to their features will be described in further sections.
+
+No previous fixed partitioning has been performed on these datasets, instead an online evaluation approach has been used to asses the quality of methods, which is known as an interleaved test-then-train. This technique, proposed by Bifet et al. in~\cite{bifet09}, proposes a model in which each example/batch (arriving at time $t$) is evaluated against $t-1$-model, and then it serves as input for training the same model in order to produce and updated $t$-model. Interleaved model arises as more accurate as it never test models on already seen elements, however it implies much more evaluations.
+
+Preprocessing techniques are grouped by task in Table~\ref{tab:parameters}. The default parameter values has been set according to the authors' criterion.
+Common parameters like window size or the number of initial elements to consider before starting the reduction process are equals for all methods in a group. A window size equals to one means that the algorithms works in an online way, whereas a value bigger than one implies a batch-based processing. For instance, feature selection and discretization methods follow an online perspective, whereas instance selectors mostly uses batches (but FISH or kNN).
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
@@ -368,18 +390,18 @@ Online ChiMerge~\cite{lehti12} & merge & window\\
   \hline
   \textbf{Method} & \textbf{Parameters} \\
   \hline
-  \textbf{Feature selection} & window size = 1 (common parameters)\\
+  \textbf{Feature selection} & window size = 1 (common)\\
   NB & --\\
   IG & --\\
   SI & --\\
   OFS & $\eta$ = 0.2, $\lambda$ = 0.01\\
   \hline
-  \textbf{Discretization} & initial elements = 100, window size = 1 (common parameters)\\
+  \textbf{Discretization} & initial elements = 100, window size = 1 (common)\\
   NB & --\\
   OC &  --\\
   PiD & $\alpha$ = 0.75, initial bins = 500, instances to update layer \#2 = 10,000, min/max = 0/1\\
   \hline
-  \textbf{Instance selection} & k = 3, window size = 100 (common parameters)\\
+  \textbf{Instance selection} & k = 3, window size = 100 (common)\\
   kNN & window size = 1\\  
   NEFCS-SRR & l = 10, pmax = 0.5, size limit = 1,000\\
   CBE& --\\
@@ -391,56 +413,32 @@ Online ChiMerge~\cite{lehti12} & merge & window\\
   }
 \end{table}
 
+As most of feature selectors and discretizers are focused on Naive Bayes, it has been elected as reference for classification. Likewise, kNN serves as reference for instance selectors. Evaluation and training is performed unlikely for each task. Concerning feature selection, contingency tables (probabilities) are updated whenever an example arrives. During the testing phase, Naive Bayes makes predictions only considering the most relevant features. In discretization, contingency tables are also updated with new examples, although their structure may change when new intervals are generated. Prediction phase is performed as usual (no selection). However, a problem arises whenever new intervals are considered. New intervals will not have enough weight in prediction, whereas old intervals will be gradually forgotten.
 
-\subsubsection*{Feature Selection}
+For instance selection, we have used different update schemes depending on the original design of each algorithm and other special considerations. An instant update scheme, where new instances are immediately added to the case-base, has been adopted for kNN and FISH. For simple kNN, an ever-updated case-base tends to adapt well to drifts in concepts definition. FISH selects a different training set for each new examples to classify, so that an online model is again the best choice. 
 
+In counterpart, NEFCS shows a batch-like behavior which requires two windows for drift detection. In this case, update of case-base is deferred and performed when the batch structure is full. For a fair comparison between competence models (CBE, ICF, NEFCS-SRR), we have adopted a model based on batches for all these algorithms. For CBE and ICF, new instances are instantly added to the case-base, but reduction is only performed when the batch size condition is met. Finally, Learn++.NSE adds to the ensemble a new classifier whenever a new batch arrives. 
 
+The whole experimental environment has been executed in a single standard machine, with the following features: 2 processors Intel Core i7 CPU 930 (4 cores/8 threads, 2.8 GHz, 8 MB cache), 24 GB of DDR2 RAM, 1 TB SATA HDD (3 Gb/s), Ethernet network connection, CentOS 6.4 (Linux). All algorithms have been integrated in MOA software (16.04v) as an extension library~\footnote{\url{http://moa.cms.waikato.ac.nz/moa-extensions/}}. MOA has also served as benchmark for all experiments.
 
-\begin{figure}
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=1.\linewidth]{experiments/results/plots/time_fsel}
-  \caption{Selection time (in seconds)}
-  \label{fig:sfig1}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=1.\linewidth]{experiments/results/plots/red_fsel}
-  \caption{Reduction rate performed}
-  \label{fig:sfig2}
-\end{subfigure}
-\caption{Distribution representation for selection time and reduction rate (feature selection)}
-\label{fig:fig}
-\end{figure}
+\subsection{Experimental analysis}
 
-%\begin{table*}[!t]
-%  \caption{Selection time elapsed by method (Feature Selection)} \label{tab:time-fsel}
-%  \centering
-%  \resizebox{.75\textheight}{!}{
-%\begin{tabular}{|l|rrrrrrrrrr|}
-%\toprule
-% & \multicolumn{1}{c}{\textbf{Naive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{Symmetrical Uncertainty}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
-%  & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} &
-% \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}}\\ \hline
-%\textit{spam\_data} & 4.22 & 16.94 & 20.85 & 28.28 & 15.79 & 19.68 & 27.79 & 9.89 & \textbf{1.04} & 21.79 \\ 
-%\textit{spam\_nominal} & 546.61 & 1,143.88 & 1,100.08 & 979.41 & 1,029.45 & 1,144.02 & 1,215.26 & 746.85 & \textbf{357.58} & 830.86 \\
-%\textit{usenet1} & \textbf{0.41} & 1.42 & 2.37 & 2.11 & 1.44 & 2.11 & 2.21 & 1.07 & 5.16 & 1.25 \\
-%\textit{usenet2} & \textbf{0.43} & 1.44 & 2.08 & 2.26 & 1.50 & 2.13 & 1.79 & 1.04 & 12.49 & 1.60 \\ 
-%\textit{usenet3} & 277.80 & 501.81 & 505.50 & 590.49 & 561.33 & 525.37 & 678.62 & 357.58 & \textbf{12.88} & 362.54 \\
-%\textit{usenet\_recurrent} & \textbf{2.84} & 7.88 & 8.11 & 13.19 & 7.73 & 8.88 & 13.62 & 5.16 & 819.22 & 10.43 \\ 
-%\textit{no\_drift} & 2.60 & 30.63 & 24.06 & 27.27 & 30.32 & 25.73 & 22.44 & 12.49 & \textbf{1.66} & 12.83 \\
-%\midrule
-%\textbf{MEAN} & \textbf{119.27} & 243.43 & 237.58 & 234.72 & 235.37 & 246.85 & 280.25 & 162.01 & 172.86 & 177.33 \\ 
-%     \bottomrule
-%\end{tabular}
-%	}
-%\end{table*}
+Once described the experimental framework and its design, we analyze the experimental results derived from it. Analysis have been divided in three sections according to the different data reductions tasks studied.
+
+\subsubsection*{\textbf{Feature Selection}}
+
+Here, we evaluate how well selection of relevant features is performed by the stream-based methods proposed in the literature. As most of these methods assumes features are discrete, we have only selected from Table~\ref{tab:datasets} those with only nominal attributes. Note that all these datasets are formed by emails, where each attribute represents the presence or the absence of a given word. These datasets fits well for feature selection as the corpus of words/features is normally quite large.
+
+Firstly, in Table~\ref{tab:acc-fsel}, we measure the classification accuracy held by the three feature selectors considered in the experimental framework: IG, SI, and OFS; plus Naive Bayes, used as reference. From these results we can assert that NB yields better results when all features are available during prediction. Any of the feature selection methods considered is able to improve the accuracy. However, IG and SI yields results pretty close to the reference method, with the advantage of generating much simpler solutions (as we will see in Figure~\ref{fig:fsel}). 
+
+Comparing selectors, we can note that information-based methods performs better than the OFS alternative based on feature weighting. Specially remarkable are \textit{spam\_data} and \textit{usenet\_recurrent} cases, where even with a significant reduction of features the perfect prediction can be obtained. It means that the algorithm is able to distingish between spam or legitimate e-mail with only ten words. Similar results can also be found in \textit{usenet1}, and \textit{usenet2}, which are skinny problems that only get reduced with the lowest selection scheme (10 features).  
 
 
 \begin{table*}[!t]
-  \caption{Total test accuracy by method (Feature Selection)} \label{tab:acc-fsel}
+  \caption{Final test accuracy by method (Feature Selection). The best outcome for
+each dataset is highlighted in bold. The second row in header represents the number of feature selected. No selection is performed for Naive Bayes} \label{tab:acc-fsel}
   \centering
-  \resizebox{.75\textheight}{!}{
+  \resizebox{1.\textwidth}{!}{
 \begin{tabular}{|l|rrrrrrrrrr|}
 \toprule
  & \multicolumn{1}{c}{\textbf{Naive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{Symmetrical Uncertainty}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
@@ -460,28 +458,10 @@ Online ChiMerge~\cite{lehti12} & merge & window\\
 	}
 \end{table*}
 
+To assert that no method is better than simple NB, we conduct an statistical analysis on classification results through a pair of non-parametric tests: Wilcoxon Signed-Ranks Test --pairwise comparison-- and Friedman-Holm Test --one vs. all--~\cite{garcia09, derrac11}. Wilcoxon Test conducts pairwise comparisons between the reference method and the rest. A level of significance $\alpha = 0.05$ has been chosen for this experiment. The first two columns in Table~\ref{tab:friedman-fsel} show Wilcoxon's results for accuracy, where '+' symbol indicates the number of methods outperformed by the algorithm in each row. Symbol '$\pm$' represents the number of wins and ties yielded by each method. The best value by column is highlighted by shaded background. The remaining columns show the results for the Friedman test. 
 
-\begin{table*}[!t]
-  \caption{Reduction rate performed by the different feature selection schemes} \label{tab:red-fsel}
-  \centering
-  \resizebox{.35\textheight}{!}{
-\begin{tabular}{|l|rrr|}
-\toprule
-  & \multicolumn{3}{c|}{\textbf{\# features selected}} \\
-  & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}} \\ \hline
-\textit{spam\_data} & \textbf{98.00} & 79.96 & 0.00 \\ 
-\textit{spam\_nominal} & \textbf{99.98} & 99.75 & 97.50 \\
-\textit{usenet1} & \textbf{90.00} & 0.00 & 0.00 \\
-\textit{usenet2} & \textbf{90.00} & 0.00 & 0.00 \\ 
-\textit{usenet3} & \textbf{99.96} & 99.64 & 96.41 \\
-\textit{usenet\_recurrent} & \textbf{98.48} & 84.83 & 0.00 \\ 
-\textit{no\_drift} & \textbf{58.33} & 0.00 & 0.00 \\
-\midrule
-\textbf{MEAN} & \textbf{90.68} & 52.03 & 27.70 \\ 
-\bottomrule
-\end{tabular}
-	}
-\end{table*}
+%This test generates a ranking according to the effectiveness associated with each discretizer (second column), ordering the tables from the best to the worst Friedman ranking. The third column shows the adjusted p-value with the post hoc Holm’s test. Note that EMD is established as the control algorithm because it has obtained the best position in all the rankings. By using a level of significance α = 0.1, EMD is significantly better than the rest of the methods, considering both C4.5 accuracy and number of cut points.
+
 
 
 \begin{table}[!htp]
@@ -512,6 +492,77 @@ OFS-10 & 0 & 2 & 58.1429 & 0.002313 \\
 \end{table}
 
 
+Figure~\ref{fig:fsel} depicts selection time spent by each algorithm, as well as the amount of reduction performed by each selection scheme (range from ten to one thousand features).
+Despite Naive Bayes uses more variables to compute predictions, it performs faster since it does not require to compute feature importances.
+
+\begin{figure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/time_fsel}
+  \caption{Selection time (in seconds)}
+  \label{fig:time-fsel}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/red_fsel}
+  \caption{Reduction rate}
+  \label{fig:red-fsel}
+\end{subfigure}
+\caption{Distribution representation for selection time and reduction rate (feature selection)}
+\label{fig:fsel}
+\end{figure}
+
+%\begin{table*}[!t]
+%  \caption{Selection time elapsed by method (Feature Selection)} \label{tab:time-fsel}
+%  \centering
+%  \resizebox{.75\textheight}{!}{
+%\begin{tabular}{|l|rrrrrrrrrr|}
+%\toprule
+% & \multicolumn{1}{c}{\textbf{Naive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{Symmetrical Uncertainty}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
+%  & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} &
+% \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}}\\ \hline
+%\textit{spam\_data} & 4.22 & 16.94 & 20.85 & 28.28 & 15.79 & 19.68 & 27.79 & 9.89 & \textbf{1.04} & 21.79 \\ 
+%\textit{spam\_nominal} & 546.61 & 1,143.88 & 1,100.08 & 979.41 & 1,029.45 & 1,144.02 & 1,215.26 & 746.85 & \textbf{357.58} & 830.86 \\
+%\textit{usenet1} & \textbf{0.41} & 1.42 & 2.37 & 2.11 & 1.44 & 2.11 & 2.21 & 1.07 & 5.16 & 1.25 \\
+%\textit{usenet2} & \textbf{0.43} & 1.44 & 2.08 & 2.26 & 1.50 & 2.13 & 1.79 & 1.04 & 12.49 & 1.60 \\ 
+%\textit{usenet3} & 277.80 & 501.81 & 505.50 & 590.49 & 561.33 & 525.37 & 678.62 & 357.58 & \textbf{12.88} & 362.54 \\
+%\textit{usenet\_recurrent} & \textbf{2.84} & 7.88 & 8.11 & 13.19 & 7.73 & 8.88 & 13.62 & 5.16 & 819.22 & 10.43 \\ 
+%\textit{no\_drift} & 2.60 & 30.63 & 24.06 & 27.27 & 30.32 & 25.73 & 22.44 & 12.49 & \textbf{1.66} & 12.83 \\
+%\midrule
+%\textbf{MEAN} & \textbf{119.27} & 243.43 & 237.58 & 234.72 & 235.37 & 246.85 & 280.25 & 162.01 & 172.86 & 177.33 \\ 
+%     \bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
+
+
+
+
+
+%\begin{table*}[!t]
+%  \caption{Reduction rate performed by the different feature selection schemes} \label{tab:red-fsel}
+%  \centering
+%  \resizebox{.35\textheight}{!}{
+%\begin{tabular}{|l|rrr|}
+%\toprule
+%  & \multicolumn{3}{c|}{\textbf{\# features selected}} \\
+%  & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}} \\ \hline
+%\textit{spam\_data} & \textbf{98.00} & 79.96 & 0.00 \\ 
+%\textit{spam\_nominal} & \textbf{99.98} & 99.75 & 97.50 \\
+%\textit{usenet1} & \textbf{90.00} & 0.00 & 0.00 \\
+%\textit{usenet2} & \textbf{90.00} & 0.00 & 0.00 \\ 
+%\textit{usenet3} & \textbf{99.96} & 99.64 & 96.41 \\
+%\textit{usenet\_recurrent} & \textbf{98.48} & 84.83 & 0.00 \\ 
+%\textit{no\_drift} & \textbf{58.33} & 0.00 & 0.00 \\
+%\midrule
+%\textbf{MEAN} & \textbf{90.68} & 52.03 & 27.70 \\ 
+%\bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
+
+
+
 \subsubsection{Instance Selection}
 
 
@@ -520,16 +571,16 @@ OFS-10 & 0 & 2 & 58.1429 & 0.002313 \\
   \centering
   \includegraphics[width=1.\linewidth]{experiments/results/plots/time_instance}
   \caption{Selection time (in seconds)}
-  \label{fig:sfig1}
+  \label{fig:time-isel}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=1.\linewidth]{experiments/results/plots/inst_inst}
   \caption{\# instances selected by method}
-  \label{fig:sfig2}
+  \label{fig:inst-isel}
 \end{subfigure}
 \caption{Distribution representation for time and \# instances selected (instance selection)}
-\label{fig:fig}
+\label{fig:isel}
 \end{figure}
 
 %
@@ -591,13 +642,14 @@ OFS-10 & 0 & 2 & 58.1429 & 0.002313 \\
 	}
 \end{table*}
 
-\begin{figure*}[!thp]
-  \begin{center}
-    \includegraphics[width=0.75\textwidth]{experiments/results/plots/inst_inst}
-  \caption{Final number of instances selected by each method (distribution)}
-  \label{fig:time-fsel}
-  \end{center}
-\end{figure*}
+%\begin{figure*}[!thp]
+%  \begin{center}
+%    \includegraphics[width=0.75\textwidth]{experiments/results/plots/inst_inst}
+%  \caption{Final number of instances selected by each method (distribution)}
+%  \label{fig:time-fsel}
+%  \end{center}
+%\end{figure*}
+
 %\begin{table*}[!t]
 %  \caption{\# instances selected by method (Instance Selection)} \label{tab:inst-isel}
 %  \centering
@@ -656,16 +708,16 @@ ICF & 0 & 1 & 69 & 0.000001\\
   \centering
   \includegraphics[width=1.\linewidth]{experiments/results/plots/time_disc}
   \caption{Selection time (in seconds)}
-  \label{fig:sfig1}
+  \label{fig:time-disc}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=1.\linewidth]{experiments/results/plots/intervals_disc}
   \caption{\# intervals generated by method}
-  \label{fig:sfig2}
+  \label{fig:interv-disc}
 \end{subfigure}
 \caption{Distribution representation for time and \# intervals}
-\label{fig:fig}
+\label{fig:disc}
 \end{figure}
 
 
