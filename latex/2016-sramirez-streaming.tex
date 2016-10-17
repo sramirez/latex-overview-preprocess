@@ -337,20 +337,20 @@ Table~\ref{tab:datasets} shows the complete list of artificial/real datasets, us
 \caption{Relevant information about classification datasets. For each
 element, the number of instances evaluated (\#Inst.), the number of attributes (\#Atts.) (which ones are numerical (\#Num.) and which ones nominal (\#Nom.)), the number of classes (\#Cl), and whether the dataset is artificially generated or not (artificial) are shown.}
 \label{tab:datasets}
-\resizebox{0.75\textwidth}{!}{
+\resizebox{0.9\textwidth}{!}{
   \begin{tabular}{|l||c||c||c||c||c||c|}
   \hline {\bf Data Set} & {\bf \#Inst.} & {\bf \#Atts.} & {\bf \#Num.} & {\bf \#Nom.} &{\bf \#Cl.} & {\bf artificial}\\
   \hline
 \textit{blips} & 500,000 & 20 & 20 & 0 & 4 & yes\\ 
-\textit{fast\_sudden\_recurring} & 500,000 & 10 & 5 & 5 & 6 & yes\\ 
+%\textit{fast\_sudden\_recurring} & 500,000 & 10 & 5 & 5 & 6 & yes\\ 
 \textit{gradual\_drift} & 500,000 & 3 & 3 & 0 & 2 & yes\\ 
-\textit{gradual\_gradual\_virtual} & 500,000 & 40 & 40 & 0 & 3 & yes\\ 
+%\textit{gradual\_gradual\_virtual} & 500,000 & 40 & 40 & 0 & 3 & yes\\ 
 \textit{gradual\_recurring\_drift} & 500,000 & 20 & 20 & 0 & 4 & yes\\ 
 \textit{incremental\_fast} & 500,000 & 10 & 10 & 0 & 4 & yes\\ 
 \textit{incremental\_slow} & 500,000 & 10 & 10 & 0 & 4 & yes\\ 
 \textit{no\_drift} & 500,000 & 24 & 0 & 24 & 10 & yes\\ 
 \textit{sudden\_drift} & 500,000 & 3 & 3 & 0 & 2 & yes\\ 
-\textit{sudden\_virtual} & 500,000 & 24 & 0 & 24 & 10 & yes\\ 
+%\textit{sudden\_virtual} & 500,000 & 24 & 0 & 24 & 10 & yes\\ 
 \textit{virtual\_drift} & 500,000 & 40 & 40 & 0 & 3 & yes\\ 
 \textit{airlines} & 539,383 & 6 & 3 & 3 & 2 & no\\ 
 \textit{covtypeNorm} & 581,011 & 54 & 10 & 44 & 7 & no\\ 
@@ -423,20 +423,22 @@ The whole experimental environment has been executed in a single standard machin
 
 \subsection{Experimental analysis}
 
-Once described the experimental framework and its design, we analyze the experimental results derived from it. Analysis have been divided in three sections according to the different data reductions tasks studied.
+Once the experimental framework and its designed is completely described, we analyze the experimental results derived from it. This analysis has been divided in three sections according to the different data reductions tasks studied: feature selection, instance selection, and discretization.
 
 \subsubsection*{\textbf{Feature Selection}}
+\label{subsubsec:fsel}
 
-Here, we evaluate how well selection of relevant features is performed by the stream-based methods proposed in the literature. As most of these methods assumes features are discrete, we have only selected from Table~\ref{tab:datasets} those with only nominal attributes. Note that all these datasets are formed by emails, where each attribute represents the presence or the absence of a given word. These datasets fits well for feature selection as the corpus of words/features is normally quite large.
+Here, we evaluate how well selection of relevant features is performed by the streaming methods proposed in the literature. As most of these methods assumes features are discrete, we have only selected from Table~\ref{tab:datasets} those problems with zero numerical attributes. Note that all these datasets are related to e-mail mining, in which each attribute represents the presence or the absence of a given word. These datasets fits well for feature selection as the corpus of words/features is normally quite large.
 
-Firstly, in Table~\ref{tab:acc-fsel}, we measure the classification accuracy held by the three feature selectors considered in the experimental framework: IG, SI, and OFS; plus Naive Bayes, used as reference. From these results we can assert that NB yields better results when all features are available during prediction. Any of the feature selection methods considered is able to improve the accuracy. However, IG and SI yields results pretty close to the reference method, with the advantage of generating much simpler solutions (as we will see in Figure~\ref{fig:fsel}). 
+Firstly, in Table~\ref{tab:acc-fsel}, we measure the classification accuracy held by the three feature selectors considered in the experimental framework: IG, SI, and OFS; plus Naive Bayes, used as reference. From the results we can assert that NB yields better results when all features are available during prediction. None of the feature selection methods considered is able to improve the accuracy. However, IG and SI generate results pretty close to the reference method, with the advantage of generating much simpler solutions (as we will see in Figure~\ref{fig:fsel}). 
 
-Comparing selectors, we can note that information-based methods performs better than the OFS alternative based on feature weighting. Specially remarkable are \textit{spam\_data} and \textit{usenet\_recurrent} cases, where even with a significant reduction of features the perfect prediction can be obtained. It means that the algorithm is able to distingish between spam or legitimate e-mail with only ten words. Similar results can also be found in \textit{usenet1}, and \textit{usenet2}, which are skinny problems that only get reduced with the lowest selection scheme (10 features).  
+Comparing selectors, we can note that information-based methods are more accurate than OSF, which is based on feature weighting. Specially remarkable are the \textit{spam\_data} and \textit{usenet\_recurrent} cases, where even with a significant reduction of features no mistakes are committed. Notice that Naive Bayes with selection is thus able to distinguish between spam or legitimate with only ten words. 
+%Similar results can also be found in \textit{usenet1}, and \textit{usenet2}, which are skinny problems that only get reduced with the lowest selection scheme (10 features).  
 
 
 \begin{table*}[!t]
-  \caption{Final test accuracy by method (Feature Selection). The best outcome for
-each dataset is highlighted in bold. The second row in header represents the number of feature selected. No selection is performed for Naive Bayes} \label{tab:acc-fsel}
+  \caption{Final test accuracy by method (feature selection). The best outcome for
+each dataset is highlighted in bold. The second row in header represents the number of feature selected. No selection is performed for Naive Bayes.} \label{tab:acc-fsel}
   \centering
   \resizebox{1.\textwidth}{!}{
 \begin{tabular}{|l|rrrrrrrrrr|}
@@ -458,11 +460,11 @@ each dataset is highlighted in bold. The second row in header represents the num
 	}
 \end{table*}
 
-To assert that no method is better than simple NB, we conduct an statistical analysis on classification results through a pair of non-parametric tests: Wilcoxon Signed-Ranks Test --pairwise comparison-- and Friedman-Holm Test --one vs. all--~\cite{garcia09, derrac11}. Wilcoxon Test conducts pairwise comparisons between the reference method and the rest. A level of significance $\alpha = 0.05$ has been chosen for this experiment. The first two columns in Table~\ref{tab:friedman-fsel} show Wilcoxon's results for accuracy, where '+' symbol indicates the number of methods outperformed by the algorithm in each row. Symbol '$\pm$' represents the number of wins and ties yielded by each method. The best value by column is highlighted by shaded background. The remaining columns show the results for the Friedman test. 
+To assert that no method is better than NB, we conduct an statistical analysis on classification accuracy results through two non-parametric tests: Wilcoxon Signed-Ranks Test --one vs. one-- and Friedman-Holm Test --one vs. all--~\cite{garcia09, derrac11}. Wilcoxon Test conducts pairwise comparisons between the reference method and the rest. A level of significance $\alpha = 0.05$ has been chosen for this experiment. The first two columns in Table~\ref{tab:friedman-fsel} show Wilcoxon's results for accuracy, where '+' symbol indicates the number of methods outperformed by each algorithm in row. Symbol '$\pm$' represents the number of wins and ties yielded by each method. The best value by column is highlighted by a shaded background.  
 
-%This test generates a ranking according to the effectiveness associated with each discretizer (second column), ordering the tables from the best to the worst Friedman ranking. The third column shows the adjusted p-value with the post hoc Holm’s test. Note that EMD is established as the control algorithm because it has obtained the best position in all the rankings. By using a level of significance α = 0.1, EMD is significantly better than the rest of the methods, considering both C4.5 accuracy and number of cut points.
+The remaining columns show the results for the Friedman test. The first one shows a effectiveness ranking of methods, ordered from the best mark (top row) to the worst. Note that the best method (the first in the ranking) is established as the control algorithm. The second column contains the adjusted p-values for each method according to the post hoc Holm's test. The same level of significance ($\alpha = 0.05$) has been established for Friedman test.
 
-
+According to the results shown in~\ref{tab:friedman-fsel}, we can assert SI-1,000 represent the most accurate solution for FS processing as it obtains the best ranking. Nevertheless, according to the Friedman-Holm evaluation, the difference in accuracy between SI-1,000 and the rest of methods is only statistically significant in case ten features are selected. 
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
@@ -493,7 +495,7 @@ OFS-10 & 0 & 2 & 58.1429 & 0.002313 \\
 
 
 Figure~\ref{fig:fsel} depicts selection time spent by each algorithm, as well as the amount of reduction performed by each selection scheme (range from ten to one thousand features).
-Despite Naive Bayes uses more variables to compute predictions, it performs faster since it does not require to compute feature importances.
+Version without selection stands as the fastest alternative. Despite NB uses more variables to compute predictions, it offers better results due to it does not compute feature importances. Among the selection alternatives, OFS performs faster than the information-based selectors. However, OFS has shown in~\ref{tab:acc-fsel} to obtain less accurate schemes than its competitors. 
 
 \begin{figure}
 \begin{subfigure}{.5\textwidth}
@@ -505,12 +507,18 @@ Despite Naive Bayes uses more variables to compute predictions, it performs fast
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=1.\linewidth]{experiments/results/plots/red_fsel}
-  \caption{Reduction rate}
+  \caption{Reduction rate (in percentage)}
   \label{fig:red-fsel}
 \end{subfigure}
-\caption{Distribution representation for selection time and reduction rate (feature selection)}
+\caption{Distribution representation for selection time and reduction (feature selection)}
 \label{fig:fsel}
 \end{figure}
+
+%Regarding the best selection scheme (number of features to select), 
+Although a better reduction rate is achieved in 10-features scheme (close to $100\%$ in mean), by selecting 1,000 features we can obtain much more accurate results and a reduction rate quite acceptable ($> 25\%$). Note that no selection is conducted on 4/7 problems when we choose the 1,000-features scheme (they have less attributes).
+
+In conclusion, SI-1,000 can be selected as the best choice because of its good accuracy  results similar to those yielded by NB, and it also offers a good reduction rate.
+
 
 %\begin{table*}[!t]
 %  \caption{Selection time elapsed by method (Feature Selection)} \label{tab:time-fsel}
@@ -563,8 +571,71 @@ Despite Naive Bayes uses more variables to compute predictions, it performs fast
 
 
 
-\subsubsection{Instance Selection}
+\subsubsection{\textbf{Instance Selection}}
 
+Here, we evaluate how instance selection methods perform on drifting environments. As opposed to Section~\ref{subsubsec:fsel}, in this experiment we have included datasets with both numeric and nominal attributes. As instance selectors are not prepared for dealing with medium datasets, those problems with high number of instances ($> 100,000$) have been discarded. Additionally, we have created new artificial datasets with a lower number of examples ($10,000$ instances). 
+
+Table~\ref{tab:acc-isel} shows accuracy results by method (column) and dataset (row). Table~\ref{tab:wilcoxon-isel} shows results on accuracy for the Wilcoxon and Friedman-Holm test, following the same scheme presented in Section~\ref{subsubsec:fsel}. From these results, we can conclude that: 
+
+\begin{itemize}
+	\item The best method in mean is updated kNN ($80.49\%$). The closest competitor (BBNR) is five units below kNN. Despite instant update provides an important advantage on kNN, other online methods, like FISH or ICF, do not respond well to changes.
+	\item No method is statistically better than updated kNN. Although kNN wins in each pairwise comparison in Wilcoxon tests, it only significantly overcomes ($\alpha = 0.05$) FISH and ICF according to Friedman-Holm tests.
+	\item Selection methods decides about removing instances without knowing how relevant a given instance will be in future. This fact can explain why kNN always performs better than other algorithms. %In counterpart, kNN is always updated, and it is only influenced by noise, not by redundancy.
+\end{itemize}
+
+
+\begin{table*}[!t]
+  \caption{Total test accuracy by method (Instance Selection)} \label{tab:acc-isel}
+  \centering
+  \resizebox{.75\textheight}{!}{
+\begin{tabular}{|l|rrrrrr|}
+\toprule
+ & \multicolumn{1}{l}{\textbf{NEFCSSRR}} & \multicolumn{1}{l}{\textbf{ICF}} & \multicolumn{1}{l}{\textbf{BBNR}} & \multicolumn{1}{l}{\textbf{FISH}} & \multicolumn{1}{l}{\textbf{LearnNSE}} & \multicolumn{1}{l|}{\textbf{kNN}} \\ \hline
+\textit{elecNormNew} & 67.7652 & 43.7882 & 73.8105 & 60.0455 & 69.6438 & \textbf{84.0815} \\ 
+\textit{powersupply} & 11.9400 & 4.2502 & 12.3800 & 5.4435 & 8.7878 & \textbf{15.1296} \\ 
+\textit{spambase} & 81.6779 & 39.3827 & \textbf{97.5440} & 95.9139 & 57.8570 & 95.1532 \\ 
+\textit{spam\_data} & 88.8782 & 25.6113 & 91.1197 & 77.3488 & 73.1338 & 93.9833 \\ 
+\textit{spam\_nominal} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} \\ 
+\textit{usenet1} & \textbf{56.6667} & 54.5333 & 54.0667 & 55.2000 & 52.7333 & 56.4667 \\ 
+\textit{usenet2} & 61.2000 & 63.4667 & 48.4000 & \textbf{69.8000} & 62.7333 & 68.2000 \\ 
+\textit{usenet\_recurrent} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} \\ 
+\textit{blips} & 90.8900 & 34.1300 & 94.2300 & 31.3200 & 82.1400 & \textbf{97.1800} \\ 
+\textit{sudden\_drift} & 76.5300 & 61.7300 & 74.2300 & 60.8700 & 79.3700 & \textbf{82.6600} \\ 
+\textit{gradual\_drift} & 68.2700 & 52.3600 & 74.4500 & 52.0200 & 79.3900 & \textbf{81.2700} \\ 
+\textit{gradual\_recurring\_drift} & 87.5800 & 28.9400 & 92.6500 & 28.8400 & 77.9700 & \textbf{96.3300} \\ 
+\textit{incremental\_fast} & 65.8900 & 51.7700 & 68.4000 & 55.8300 & 75.2800 & \textbf{77.2800} \\ 
+\textit{incremental\_slow} & 72.4300 & 50.9800 & 68.7000 & 56.5800 & 76.7600 & \textbf{79.1000} \\ 
+\midrule
+\textbf{MEAN} & 73.5513 & 50.7816 & 74.9986 & 60.6580 & 71.1285 & \textbf{80.4882} \\ 
+\bottomrule
+\end{tabular}
+	}
+\end{table*}
+
+\begin{table}[!htp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scriptsize
+\caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
+\label{tab:wilcoxon-isel}
+\resizebox{0.75\textwidth}{!}{
+\begin{tabular}{lcccccc}
+\hline
+ Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+ & $+$ & $\pm$ & & \\
+\toprule
+kNN & \cellcolor[gray]{0.8} 5 & \cellcolor[gray]{0.8} 5 & 21 & --\\
+BBNR & 2 & 4 & 32.6429 & 0.265669\\
+NEFCSSRR & 2 & 4 & 34.8571 & 0.265669\\
+LearnNSE & 1 & 4 & 40.5 & 0.103271\\
+FISH & 0 & 2 & 57 & 0.000377\\
+ICF & 0 & 1 & 69 & 0.000001\\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+Regarding reduction and time, Figure~\ref{fig:fsel} depicts the distribution for both variables. From these plots, we can claim that BBNR can be considered as the most accurate solution, and it also offers the most reduced schemes. However, BBNR spends a long time in selection. Learn.NSE++ also represents an interesting option as this method is on the accuracy top-3, and performs much faster than BBNR. Notice that Learn.NSE++ has not been included in Figure~\ref{fig:inst-isel} because no explicit reduction is committed by this ensemble-based model. FISH does not represent a real reduction solution either, as it considers all previous instances to compute space-time distances.
 
 \begin{figure}
 \begin{subfigure}{.5\textwidth}
@@ -576,10 +647,10 @@ Despite Naive Bayes uses more variables to compute predictions, it performs fast
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=1.\linewidth]{experiments/results/plots/inst_inst}
-  \caption{\# instances selected by method}
+  \caption{Reduction rate (in \# instances selected)}
   \label{fig:inst-isel}
 \end{subfigure}
-\caption{Distribution representation for time and \# instances selected (instance selection)}
+\caption{Distribution representation for time and reduction (instance selection)}
 \label{fig:isel}
 \end{figure}
 
@@ -613,34 +684,6 @@ Despite Naive Bayes uses more variables to compute predictions, it performs fast
 %\end{table*}
 
 
-
-\begin{table*}[!t]
-  \caption{Total test accuracy by method (Instance Selection)} \label{tab:acc-isel}
-  \centering
-  \resizebox{.75\textheight}{!}{
-\begin{tabular}{|l|rrrrrr|}
-\toprule
- & \multicolumn{1}{l}{\textbf{NEFCSSRR}} & \multicolumn{1}{l}{\textbf{ICF}} & \multicolumn{1}{l}{\textbf{BBNR}} & \multicolumn{1}{l}{\textbf{FISH}} & \multicolumn{1}{l}{\textbf{LearnNSE}} & \multicolumn{1}{l|}{\textbf{kNN}} \\ \hline
-\textit{elecNormNew} & 67.7652 & 43.7882 & 73.8105 & 60.0455 & 69.6438 & \textbf{84.0815} \\ 
-\textit{powersupply} & 11.9400 & 4.2502 & 12.3800 & 5.4435 & 8.7878 & \textbf{15.1296} \\ 
-\textit{spambase} & 81.6779 & 39.3827 & \textbf{97.5440} & 95.9139 & 57.8570 & 95.1532 \\ 
-\textit{spam\_data} & 88.8782 & 25.6113 & 91.1197 & 77.3488 & 73.1338 & 93.9833 \\ 
-\textit{spam\_nominal} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} \\ 
-\textit{usenet1} & \textbf{56.6667} & 54.5333 & 54.0667 & 55.2000 & 52.7333 & 56.4667 \\ 
-\textit{usenet2} & 61.2000 & 63.4667 & 48.4000 & \textbf{69.8000} & 62.7333 & 68.2000 \\ 
-\textit{usenet\_recurrent} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} \\ 
-\textit{blips} & 90.8900 & 34.1300 & 94.2300 & 31.3200 & 82.1400 & \textbf{97.1800} \\ 
-\textit{sudden\_drift} & 76.5300 & 61.7300 & 74.2300 & 60.8700 & 79.3700 & \textbf{82.6600} \\ 
-\textit{gradual\_drift} & 68.2700 & 52.3600 & 74.4500 & 52.0200 & 79.3900 & \textbf{81.2700} \\ 
-\textit{gradual\_recurring\_drift} & 87.5800 & 28.9400 & 92.6500 & 28.8400 & 77.9700 & \textbf{96.3300} \\ 
-\textit{incremental\_fast} & 65.8900 & 51.7700 & 68.4000 & 55.8300 & 75.2800 & \textbf{77.2800} \\ 
-\textit{incremental\_slow} & 72.4300 & 50.9800 & 68.7000 & 56.5800 & 76.7600 & \textbf{79.1000} \\ 
-\midrule
-\textbf{MEAN} & 73.5513 & 50.7816 & 74.9986 & 60.6580 & 71.1285 & \textbf{80.4882} \\ 
-\bottomrule
-\end{tabular}
-	}
-\end{table*}
 
 %\begin{figure*}[!thp]
 %  \begin{center}
@@ -678,72 +721,70 @@ Despite Naive Bayes uses more variables to compute predictions, it performs fast
 %	}
 %\end{table*}
 
-\begin{table}[!htp]
-\renewcommand{\arraystretch}{1.3}
-\centering
-\scriptsize
-\caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
-\label{tab:wilcoxon-isel}
-\resizebox{0.75\textwidth}{!}{
-\begin{tabular}{lcccccc}
-\hline
- Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
- & $+$ & $\pm$ & & \\
-\toprule
-kNN & \cellcolor[gray]{0.8} 5 & \cellcolor[gray]{0.8} 5 & 21 & --\\
-BBNR & 2 & 4 & 32.6429 & 0.265669\\
-NEFCSSRR & 2 & 4 & 34.8571 & 0.265669\\
-LearnNSE & 1 & 4 & 40.5 & 0.103271\\
-FISH & 0 & 2 & 57 & 0.000377\\
-ICF & 0 & 1 & 69 & 0.000001\\
-\bottomrule
-\end{tabular}
-}
-\end{table}
 
-\subsubsection*{Discretization}
+\subsubsection*{\textbf{Discretization}}
 
-\begin{figure}
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=1.\linewidth]{experiments/results/plots/time_disc}
-  \caption{Selection time (in seconds)}
-  \label{fig:time-disc}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=1.\linewidth]{experiments/results/plots/intervals_disc}
-  \caption{\# intervals generated by method}
-  \label{fig:interv-disc}
-\end{subfigure}
-\caption{Distribution representation for time and \# intervals}
-\label{fig:disc}
-\end{figure}
+To evaluate the ability of discretizers to reduce continuous feature space, we propose a new study with two discretizers for data streams. Naive Bayes has also been used as benchmark to evaluate discretization schemes. In this experiment, we have considered those datasets with at least one numerical attribute. Email-based dataset used in Section~\ref{subsubsec:fsel} are thus discarded.
 
+Table~\ref{tab:res-disc} and~\ref{tab:wilcoxon-disc} contain test accuracy results for Naive Bayes and NB plus some discretization scheme. From these results, we can conclude the following statements:
+
+\begin{itemize}
+	\item No method is better than NB model without discretization. Discretization schemes generated by the two discretizers yield poor results, far from those yielded by NB. 
+	\item This fact has been statistically confirmed by the non-parametrical tests. p-values obtained for OC and PiD ($<0.005$) are much lower than the level of significance established for the Friedman-Holm test ($\alpha = 0.05$).
+	\item The worst case is represented by PiD, which needs to define a long list of parameters. Among them, the minimum and the maximum value for each feature which is quite difficult to guess in streaming environments. Other important parameters like the step to create new intervals also depends on these values.
+\end{itemize}
+
+
+%\begin{table*}[!t]
+%  \caption{Discretization time, test accuracy and number of intervals results for all discretizers} \label{tab:res-disc}
+%  \centering
+%  \resizebox{.75\textheight}{!}{
+%\begin{tabular}{|l|rrrrrrrr|}
+%\toprule
+%& \multicolumn{3}{c}{\textbf{Time}} & \multicolumn{3}{c}{\textbf{Accuracy}} & \multicolumn{2}{c|}{\textbf{\# intervals}} \\
+% & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Na\"ive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Na\"ive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l|}{\textbf{OC}} \\ \hline
+%\textit{airlines} & 17.53 & 286.57 & \textbf{14.04} & 63.5817 & 63.9015 & \textbf{64.5504} & \textbf{19} & 33 \\ 
+%\textit{powersupply} & 1.11 & 1.31 & \textbf{0.64} & 63.5817 & 63.9015 & \textbf{64.5504} & 1,018 & \textbf{14} \\ 
+%\textit{elecNormNew} & 1.52 & 7.46 & \textbf{0.67} & 42.4545 & 57.1306 & \textbf{73.3625} & 2,041 & \textbf{49} \\ 
+%\textit{spambase} & 0.96 & 1.30 & \textbf{0.50} & \textbf{87.8939} & 84.2426 & 82.8081 & 29,116 & \textbf{228}\\ 
+%\textit{kddcup\_10} & 29.78 & 3,317.92 & \textbf{18.59}  & 20.1164 & 95.4200 & \textbf{97.1908} & 273 & \textbf{418}\\ 
+%\textit{poker-lsn} & 17.29 & 2,280.30 & \textbf{11.72} & 2.6008 & 52.3943 & \textbf{59.5528} & \textbf{54} & 55\\ 
+%\textit{covtypeNorm} & 38.13 & 888.83 & \textbf{28.28} & 54.0197 & 3.1984 & \textbf{60.5208} & \textbf{74} & 110\\ 
+%\textit{blips} & 18.29 & 1,927.32 & \textbf{12.02} & 30.3674 & 26.7278 & \textbf{60.9060} & \textbf{92} & 220 \\ 
+%\textit{sudden\_drift} & 6.05 & 229.00 & \textbf{2.49} & 59.3210 & 78.4012 & \textbf{83.8144} & \textbf{10} & 33 \\ 
+%\textit{gradual\_drift} & 6.09 & 421.11 & \textbf{3.63} & 52.1964 & 76.2868 & \textbf{84.7000} & \textbf{10} & 33\\ 
+%\textit{gradual\_recurring\_drift} & 19.52 & 1,722.27 & \textbf{12.52} & 26.9604 & 28.5176 & \textbf{56.7450} & \textbf{100} & 220 \\ 
+%\textit{incremental\_fast} & 12.24 & 1,039.89 & \textbf{5.68} & 49.9620 & 49.9460 & \textbf{76.3642} & 4,608 & \textbf{110}\\ 
+%\textit{incremental\_slow} & 13.41 & 987.31 & \textbf{6.06} & 49.9966 & 49.9866 & \textbf{78.0688} & 5,120 & \textbf{110}\\ 
+%\midrule
+%\textbf{MEAN} & 13.99 & 1,008.51 & \textbf{8.99} & 41.7651 & 51.3328 & \textbf{68.8225} & 3,271.92 & \textbf{125.62} \\ 
+%\bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
 
 \begin{table*}[!t]
-  \caption{Discretization time, test accuracy and number of intervals results for all discretizers} \label{tab:res-disc}
+  \caption{Classification test accuracy after discretization} \label{tab:res-disc}
   \centering
-  \resizebox{.75\textheight}{!}{
-\begin{tabular}{|l|rrrrrrrr|}
+  \resizebox{.55\textheight}{!}{
+\begin{tabular}{|l|rrr|}
 \toprule
-& \multicolumn{3}{c}{\textbf{Time}} & \multicolumn{3}{c}{\textbf{Accuracy}} & \multicolumn{2}{c|}{\textbf{\# intervals}} \\
- & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Naive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Naive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l|}{\textbf{OC}} \\ \hline
-\textit{airlines} & 17.53 & 286.57 & \textbf{14.04} & 63.5817 & 63.9015 & \textbf{64.5504} & \textbf{19} & 33 \\ 
-\textit{powersupply} & 1.11 & 1.31 & \textbf{0.64} & 63.5817 & 63.9015 & \textbf{64.5504} & 1,018 & \textbf{14} \\ 
-\textit{elecNormNew} & 1.52 & 7.46 & \textbf{0.67} & 42.4545 & 57.1306 & \textbf{73.3625} & 2,041 & \textbf{49} \\ 
-\textit{spambase} & 0.96 & 1.30 & \textbf{0.50} & \textbf{87.8939} & 84.2426 & 82.8081 & 29,116 & \textbf{228}\\ 
-\textit{kddcup\_10} & 29.78 & 3,317.92 & \textbf{18.59}  & 20.1164 & 95.4200 & \textbf{97.1908} & 273 & \textbf{418}\\ 
-\textit{poker-lsn} & 17.29 & 2,280.30 & \textbf{11.72} & 2.6008 & 52.3943 & \textbf{59.5528} & \textbf{54} & 55\\ 
-\textit{covtypeNorm} & 38.13 & 888.83 & \textbf{28.28} & 54.0197 & 3.1984 & \textbf{60.5208} & \textbf{74} & 110\\ 
-\textit{blips} & 18.29 & 1,927.32 & \textbf{12.02} & 30.3674 & 26.7278 & \textbf{60.9060} & \textbf{92} & 220 \\ 
-\textit{sudden\_drift} & 6.05 & 229.00 & \textbf{2.49} & 59.3210 & 78.4012 & \textbf{83.8144} & \textbf{10} & 33 \\ 
-\textit{gradual\_drift} & 6.09 & 421.11 & \textbf{3.63} & 52.1964 & 76.2868 & \textbf{84.7000} & \textbf{10} & 33\\ 
-\textit{gradual\_recurring\_drift} & 19.52 & 1,722.27 & \textbf{12.52} & 26.9604 & 28.5176 & \textbf{56.7450} & \textbf{100} & 220 \\ 
-\textit{incremental\_fast} & 12.24 & 1,039.89 & \textbf{5.68} & 49.9620 & 49.9460 & \textbf{76.3642} & 4,608 & \textbf{110}\\ 
-\textit{incremental\_slow} & 13.41 & 987.31 & \textbf{6.06} & 49.9966 & 49.9866 & \textbf{78.0688} & 5,120 & \textbf{110}\\ 
+ & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l|}{\textbf{Na\"ive Bayes}} \\ \hline
+\textit{airlines} & 63.5817 & 63.9015 & \textbf{64.5504}  \\ 
+\textit{powersupply} & 63.5817 & 63.9015 & \textbf{64.5504} \\ 
+\textit{elecNormNew} & 42.4545 & 57.1306 & \textbf{73.3625}\\ 
+\textit{spambase} & \textbf{87.8939} & 84.2426 & 82.8081\\ 
+\textit{kddcup\_10} & 20.1164 & 95.4200 & \textbf{97.1908}\\ 
+\textit{poker-lsn} & 2.6008 & 52.3943 & \textbf{59.5528} \\ 
+\textit{covtypeNorm} & 54.0197 & 3.1984 & \textbf{60.5208}\\ 
+\textit{blips} & 30.3674 & 26.7278 & \textbf{60.9060}\\ 
+\textit{sudden\_drift} & 59.3210 & 78.4012 & \textbf{83.8144}\\ 
+\textit{gradual\_drift} & 52.1964 & 76.2868 & \textbf{84.7000}\\ 
+\textit{gradual\_recurring\_drift} & 26.9604 & 28.5176 & \textbf{56.7450}\\ 
+\textit{incremental\_fast} & 49.9620 & 49.9460 & \textbf{76.3642}\\ 
+\textit{incremental\_slow} & 49.9966 & 49.9866 & \textbf{78.0688}\\ 
 \midrule
-\textbf{MEAN} & 13.99 & 1,008.51 & \textbf{8.99} & 41.7651 & 51.3328 & \textbf{68.8225} & 3,271.92 & \textbf{125.62} \\ 
+\textbf{MEAN} & 41.7651 & 51.3328 & \textbf{68.8225} \\ 
 \bottomrule
 \end{tabular}
 	}
@@ -762,13 +803,31 @@ ICF & 0 & 1 & 69 & 0.000001\\
  Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
  & $+$ & $\pm$ & & \\
 \toprule
-Naive Bayes & \cellcolor[gray]{0.8} 2 & \cellcolor[gray]{0.8} 2 & 9.4615 & --\\
+Na\"ive Bayes & \cellcolor[gray]{0.8} 2 & \cellcolor[gray]{0.8} 2 & 9.4615 & --\\
 OC & 0 & 1 & 22.1538 & 0.004538\\
 PiD & 0 & 1 & 28.3846 & 0.000023\\
 \bottomrule
 \end{tabular}
 }
 \end{table}
+
+
+\begin{figure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/time_disc}
+  \caption{Selection time (in seconds)}
+  \label{fig:time-disc}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/intervals_disc}
+  \caption{Reduction rate (in \# intervals generated)}
+  \label{fig:interv-disc}
+\end{subfigure}
+\caption{Distribution representation for time and reduction (discretization)}
+\label{fig:disc}
+\end{figure}
 
 
 \section*{Acknowlegments}
