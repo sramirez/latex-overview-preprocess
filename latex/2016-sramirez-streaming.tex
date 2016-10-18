@@ -143,7 +143,7 @@ machine learning \sep data streams \sep data preprocessing
 
 
 \section{Data streaming and concept drift}
-
+\label{sec:stream}
 
 \section{Feature selection for data streaming}
 \label{sec:fs}
@@ -283,7 +283,7 @@ Discretization, like other techniques, is also affected by changes in data distr
 
 Equal-frequency discretization (based on histograms computation) can be considered as one of the first techniques in dealing with incremental discretization for streaming. By using the quantiles as cut points, the feature space can be partitioned in equal-frequency intervals. Estimation of quantiles in streams have been studied in depth in the literature, in both forms: approximate~\cite{ben10, webb14} and exact~\cite{gupta03, guha09}. Equal-width discretizer is another unsupervised approach that only requires as input the range of features and the number of splitting intervals. The main drawback of both techniques is related to the requirement of streamed records arriving in random order, which is not possible in many learning problems. 
 
-Another important requirement to be considered is that some incremental algorithms need to maintain the same set of cut points (number, structure and meaning) over time~\cite{webb14}. That is the case of most discriminative learning algorithms. For these algorithms, a equal-width or equal-frequency discretizer could fit as both defines as input parameter the number of bins and most of times maintain their meaning. Other static algorithms, like Naive Bayes, does not require the preservation of intervals during the subsequent predictive phase, but only to save some statistics for the current discretization scheme. 
+Another important requirement to be considered is that some incremental algorithms need to maintain the same set of cut points (number, structure and meaning) over time~\cite{webb14}. That is the case of most discriminative learning algorithms. For these algorithms, a equal-width or equal-frequency discretizer could fit as both defines as input parameter the number of bins and most of times maintain their meaning. Other static algorithms, like Na\"ive Bayes (NB), does not require the preservation of intervals during the subsequent predictive phase, but only to save some statistics for the current discretization scheme. 
 
 According to~\cite{gama06}, one of the main problems of unsupervised discretizers is the necessity of defining the number of bins. Such decision can be assisted by some pre-defined rules (e.g., Sturges' rule) or by an exploratory analysis process. However, exploratory analysis is no longer possible in the present days where the number of instances is too large and the rules has shown to work only with small samples.
 
@@ -316,26 +316,26 @@ Online ChiMerge~\cite{lehti12} & merge & window\\
 
 \section*{Experiments}
 
-In this section we evaluate the usefulness and performance of the proposals presented before from different perspectives:
+In this section we evaluate the usefulness and performance of the streaming preprocessing proposals presented before, from different perspectives:
 
 \begin{itemize}
-	\item Effectiveness: measured as the number of correctly classified instances divided by the total number of instances in the training set (accuracy).
-	\item Performance: measured as the total time spent by the algorithm in the reduction phase. This phase is usually performed before the learning phase, although sometimes it is performed simultaneously.
-	\item Reduction rate: measured as the amount of information reduced with respect to the original set (in percentage). For selection methods, it is related to the number of rows/columns removed, whereas for discretization, it is related to the degree of simplification in the feature spaces.
+	\item Effectiveness: measured as the number of correctly classified instances divided by the total number of instances in the training set (accuracy). It can be considered as the most relevant factor in measuring usefulness of proposals.
+	\item Performance: measured as the total time spent by the algorithm in the reduction/discretization phase. Usually performed before the learning phase, although sometimes it runs simultaneously to the prediction phase.
+	\item Reduction rate: measured as the amount of reduction accomplished with respect to the original set (in percentage). For selection methods, it is related to the number of rows/columns removed, whereas for discretization, it is related to the degree of simplification of feature spaces.
 \end{itemize} 
 
-\subsection{Experimental framework: datasets, methods and configurations}
+\subsection{Experimental framework: datasets, methods and parameters}
 
-We evaluate the different proposals by grouping them in three different experimental environments according to their preprocessing task. The order followed is: feature selection, instance selection, and finally, discretization.
+In following experiments, evaluation of proposals is done by grouping them in three different environments according to their preprocessing task. Each task needs different settings due to its unlike characteristics. The order followed is: feature selection (Section~\ref{subsubsec:fsel}), instance selection (Section~\ref{subsubsec:isel}), and discretization (Section~\ref{subsubsec:disc}).
 
-Table~\ref{tab:datasets} shows the complete list of artificial/real datasets, used in our experiments to assess usefulness and performance of preprocessing algorithms. Artificial stream datasets have been generated using MOA benchmark, aiming at providing a wide range of drifting environments --blips, sudden and gradual, among others-- to test reduction algorithms. Each artificial dataset has been created using different combinations of generators and parameters. For a complete description of datasets and associated code, please refer to our GitHub repository\footnote{\url{https://github.com/sramirez/MOAReduction}}. 
+Table~\ref{tab:datasets} shows the complete list of artificial and real datasets used in our experiments to assess the preprocessing algorithms. Artificial stream datasets have been generated using Massive Online Analysis (MOA) benchmark~\cite{bifet10}, aiming at providing a wide range of drifting environments (blips, sudden and gradual, among others described in Section~\ref{sec:stream}) to evaluate the algorithms. Each artificial dataset has been created using different combinations of generators and different parameter values. For a complete description of datasets, and source code, please refer to our GitHub repository\footnote{\url{https://github.com/sramirez/MOAReduction}}. 
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
 \centering
 \scriptsize
 \caption{Relevant information about classification datasets. For each
-element, the number of instances evaluated (\#Inst.), the number of attributes (\#Atts.) (which ones are numerical (\#Num.) and which ones nominal (\#Nom.)), the number of classes (\#Cl), and whether the dataset is artificially generated or not (artificial) are shown.}
+row, the number of instances evaluated (\#Inst.), the number of attributes (\#Atts.) (which ones are numerical (\#Num.) and which ones nominal (\#Nom.)), the number of classes (\#Cl), and whether the dataset is artificially generated or not (artificial) are shown.}
 \label{tab:datasets}
 \resizebox{0.9\textwidth}{!}{
   \begin{tabular}{|l||c||c||c||c||c||c|}
@@ -351,7 +351,7 @@ element, the number of instances evaluated (\#Inst.), the number of attributes (
 \textit{no\_drift} & 500,000 & 24 & 0 & 24 & 10 & yes\\ 
 \textit{sudden\_drift} & 500,000 & 3 & 3 & 0 & 2 & yes\\ 
 %\textit{sudden\_virtual} & 500,000 & 24 & 0 & 24 & 10 & yes\\ 
-\textit{virtual\_drift} & 500,000 & 40 & 40 & 0 & 3 & yes\\ 
+%\textit{virtual\_drift} & 500,000 & 40 & 40 & 0 & 3 & yes\\ 
 \textit{airlines} & 539,383 & 6 & 3 & 3 & 2 & no\\ 
 \textit{covtypeNorm} & 581,011 & 54 & 10 & 44 & 7 & no\\ 
 \textit{elecNormNew} & 45,311 & 8 & 7 & 1 & 2 & no \\ 
@@ -370,14 +370,22 @@ element, the number of instances evaluated (\#Inst.), the number of attributes (
 }
 \end{table}
 
-Real datasets come from different sources. \textit{airlines}, \textit{elecNormNew}, \textit{poker-lsn}, and \textit{covtypeNorm} can be found in MOA's streams repository. \textit{spam\_data}, \textit{usenet1}, \textit{usenet2}, and \textit{usenet3} are mail datasets for text mining which suffers from concept drift\footnote{\url{http://mlkd.csd.auth.gr/concept_drift.html}}. \textit{spambase} is a collection of e-mails classified as spam collected from different users~\cite{bache13}. \textit{kddcup\_10}, \textit{spam\_nominal} (SpamAssasin), and \textit{usenet\_recurrent} were collected by the professor Gama and his research group KDUS\footnote{\url{http://www.liaad.up.pt/kdus/products/datasets-for-concept-drift}}. Last dataset (\textit{power\_supply}) comes from Stream Data Mining Repository\footnote{\url{http://www.cse.fau.edu/~xqzhu/stream.html}}, and contains power supply registers collected hourly of an electricity company.
+Real datasets come from different sources:
 
-Not all datasets in this list have been considered for every experiment, as each algorithm has its particularities and conditions. For instance, most of feature selectors require discrete features as they are based on mutual information. However, all MOA generators~\cite{bifet10} only generate datasets with continuous attributes. Thus, the final election of datasets and any detail concerned to their features will be described in further sections.
+\begin{itemize}
+	\item \textit{airlines}, \textit{elecNormNew}, \textit{poker-lsn}, and \textit{covtypeNorm} can be found in MOA's streams repository.
+	\item \textit{spam\_data}, \textit{usenet1}, \textit{usenet2}, and \textit{usenet3} are e-mail datasets affected by concept drift, collected by The Machine Learning and Knowledge Discovery (MLKD) group (\url{http://mlkd.csd.auth.gr/concept_drift.html}).
+	\item \textit{spambase} is a collection of e-mails classified as spam~\cite{bache13}. 
+	\item \textit{kddcup\_10}, \textit{spam\_nominal} (SpamAssasin), and \textit{usenet\_recurrent} were collected by Dr. Gama and his research group KDUS (\url{http://www.liaad.up.pt/kdus/products/datasets-for-concept-drift}). 
+	\item Last dataset (\textit{power\_supply}) comes from Stream Data Mining Repository (\url{http://www.cse.fau.edu/~xqzhu/stream.html}), and contains power supply registers collected hourly from an electricity company.
+\end{itemize}
+ 
+Not all datasets described above have been considered in every experiment. Some algorithms are designed to deal with a particular kind of data. For instance, most of feature selectors require discrete features inasmuch as they are based on mutual information. However, MOA generators~\cite{bifet10} only generate datasets with continuous attributes. Thus, the final election of datasets and any detail concerned to their features will be described in further sections.
 
-No previous fixed partitioning has been performed on these datasets, instead an online evaluation approach has been used to asses the quality of methods, which is known as an interleaved test-then-train. This technique, proposed by Bifet et al. in~\cite{bifet09}, proposes a model in which each example/batch (arriving at time $t$) is evaluated against $t-1$-model, and then it serves as input for training the same model in order to produce and updated $t$-model. Interleaved model arises as more accurate as it never test models on already seen elements, however it implies much more evaluations.
+No previous fixed partitioning has been performed on these datasets, instead an online evaluation approach has been elected to asses the quality of methods, known as \textbf{interleaved test-then-train}. This technique, proposed by Bifet et al. in~\cite{bifet09}, defines a model in which each example/batch (arriving at time $t$) is evaluated against $t-1$-model, and then it serves as input to update that model and forms $t$-model. Interleaved model arises as a very accurate for streaming evaluate since it never tests models on already seen elements. This kind evaluation however requires much more evaluations, as many as elements in the training set.
 
-Preprocessing techniques are grouped by task in Table~\ref{tab:parameters}. The default parameter values has been set according to the authors' criterion.
-Common parameters like window size or the number of initial elements to consider before starting the reduction process are equals for all methods in a group. A window size equals to one means that the algorithms works in an online way, whereas a value bigger than one implies a batch-based processing. For instance, feature selection and discretization methods follow an online perspective, whereas instance selectors mostly uses batches (but FISH or kNN).
+Preprocessing techniques used in experiments are listed and grouped by task in Table~\ref{tab:parameters}. The default parameter values has been established according to the authors' criterion.
+Common parameters --like window size  or the number of initial elements to consider before starting the reduction process-- tends to have common values within the same group. A window size equals to one means that the algorithms works in an online way, whereas a value higher than one implies a batch-based processing. For instance, feature selection and discretization methods exhibit an online behavior, whereas most of instance selectors process elements in batches (except FISH and kNN).
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
@@ -413,37 +421,39 @@ Common parameters like window size or the number of initial elements to consider
   }
 \end{table}
 
-As most of feature selectors and discretizers are focused on Naive Bayes, it has been elected as reference for classification. Likewise, kNN serves as reference for instance selectors. Evaluation and training is performed unlikely for each task. Concerning feature selection, contingency tables (probabilities) are updated whenever an example arrives. During the testing phase, Naive Bayes makes predictions only considering the most relevant features. In discretization, contingency tables are also updated with new examples, although their structure may change when new intervals are generated. Prediction phase is performed as usual (no selection). However, a problem arises whenever new intervals are considered. New intervals will not have enough weight in prediction, whereas old intervals will be gradually forgotten.
+As most of feature selectors and discretizers are focused on NB, it has been elected as benchmark for these groups. Likewise, kNN serves as reference for instance selectors. Prediction and training processes are performed unlikely for each task. Concerning feature selection, contingency tables in NB are updated whenever an example arrives. During classification phase, NB makes predictions by considering only the most relevant features. 
 
-For instance selection, we have used different update schemes depending on the original design of each algorithm and other special considerations. An instant update scheme, where new instances are immediately added to the case-base, has been adopted for kNN and FISH. For simple kNN, an ever-updated case-base tends to adapt well to drifts in concepts definition. FISH selects a different training set for each new examples to classify, so that an online model is again the best choice. 
+Training in discretization is also accomplished following the previous scheme, with the particularity that the structure of contingency tables may change whenever new intervals are generated. A new discretization scheme means old model will be outdated and the amount of errors will sharply increase. %Prediction is performed as usual, without selection.
 
-In counterpart, NEFCS shows a batch-like behavior which requires two windows for drift detection. In this case, update of case-base is deferred and performed when the batch structure is full. For a fair comparison between competence models (CBE, ICF, NEFCS-SRR), we have adopted a model based on batches for all these algorithms. For CBE and ICF, new instances are instantly added to the case-base, but reduction is only performed when the batch size condition is met. Finally, Learn++.NSE adds to the ensemble a new classifier whenever a new batch arrives. 
+For instance selection, different update schemes have been used depending on the original design of each selector, as well as other details. For kNN and FISH, an instant update scheme, where new instances are immediately added to the case-base, has been adopted. This scheme gives kNN a clear advantage over the rest of methods since an ever-updated case-base tends to adapt well to changes in concepts' definition. However, it also introduces a lot of redundancy which does not affect accuracy. FISH selects a different training set whenever a new example arrives, thus acting in an online way.
 
-The whole experimental environment has been executed in a single standard machine, with the following features: 2 processors Intel Core i7 CPU 930 (4 cores/8 threads, 2.8 GHz, 8 MB cache), 24 GB of DDR2 RAM, 1 TB SATA HDD (3 Gb/s), Ethernet network connection, CentOS 6.4 (Linux). All algorithms have been integrated in MOA software (16.04v) as an extension library~\footnote{\url{http://moa.cms.waikato.ac.nz/moa-extensions/}}. MOA has also served as benchmark for all experiments.
+In counterpart, NEFCS shows a batch-like behavior which requires two windows for drift detection. Here, the updating of the case-base is deferred until a complete batch of examples is available. For a fair comparison between competence models (CBE, ICF, NEFCS-SRR), we have adopted a model based on batches for all these algorithms. New instances are immediately added to the case-base in CBE and ICF, but reduction is only performed when the batch size condition is met. Finally, Learn++.NSE creates a new classifier and adds it to the ensemble whenever a new batch arrives. 
+
+The whole experimental environment has been executed in a single standard machine, with the following features: 2 processors Intel Core i7 CPU 930 (4 cores/8 threads, 2.8 GHz, 8 MB cache), 24 GB of DDR2 RAM, 1 TB SATA HDD (3 Gb/s), Ethernet network connection, CentOS 6.4 (Linux). Algorithm developed have been integrated in MOA software (16.04v) as an extension library~\footnote{\url{http://moa.cms.waikato.ac.nz/moa-extensions/}}. MOA has also served as benchmark for our experiments.
 
 \subsection{Experimental analysis}
 
-Once the experimental framework and its designed is completely described, we analyze the experimental results derived from it. This analysis has been divided in three sections according to the different data reductions tasks studied: feature selection, instance selection, and discretization.
+Once the experimental framework and its design is defined, we analyze the experimental results derived from it. This analysis has been divided in three sections according to the different data reductions tasks studied: feature selection, instance selection, and discretization.
 
-\subsubsection*{\textbf{Feature Selection}}
+\subsubsection{\textbf{Feature Selection}}
 \label{subsubsec:fsel}
 
-Here, we evaluate how well selection of relevant features is performed by the streaming methods proposed in the literature. As most of these methods assumes features are discrete, we have only selected from Table~\ref{tab:datasets} those problems with zero numerical attributes. Note that all these datasets are related to e-mail mining, in which each attribute represents the presence or the absence of a given word. These datasets fits well for feature selection as the corpus of words/features is normally quite large.
+Here, we evaluate how well selection of relevant features is performed by the streaming methods proposed in the literature. As most of these methods assumes features are discrete, we have only selected from Table~\ref{tab:datasets} those problems with no numerical attribute. Note that all these datasets comes from the text mining field, in which each attribute represents the presence or the absence of a given word. These datasets fits well for feature selection as the corpus of words/features is normally quite large.
 
-Firstly, in Table~\ref{tab:acc-fsel}, we measure the classification accuracy held by the three feature selectors considered in the experimental framework: IG, SI, and OFS; plus Naive Bayes, used as reference. From the results we can assert that NB yields better results when all features are available during prediction. None of the feature selection methods considered is able to improve the accuracy. However, IG and SI generate results pretty close to the reference method, with the advantage of generating much simpler solutions (as we will see in Figure~\ref{fig:fsel}). 
+Firstly, in Table~\ref{tab:acc-fsel}, we measure the classification accuracy held by the three feature selectors considered in the experimental framework: IG, SI, and OFS; plus NB without selection. From results we can claim that NB yields better results when all features are available during prediction. None of the selection schemes show better effectiveness than NB. However, IG and SI generate results pretty close to NB, with the advantage of generating much simpler solutions (as can be seen in Figure~\ref{fig:red-fsel}). 
 
-Comparing selectors, we can note that information-based methods are more accurate than OSF, which is based on feature weighting. Specially remarkable are the \textit{spam\_data} and \textit{usenet\_recurrent} cases, where even with a significant reduction of features no mistakes are committed. Notice that Naive Bayes with selection is thus able to distinguish between spam or legitimate with only ten words. 
+Comparing selectors, we can note that information-based methods are more accurate than OSF (based on feature weighting). Specially remarkable are the \textit{spam\_data} and \textit{usenet\_recurrent} cases, where even with only ten words the classifier is able to predict perfectly all examples. 
 %Similar results can also be found in \textit{usenet1}, and \textit{usenet2}, which are skinny problems that only get reduced with the lowest selection scheme (10 features).  
 
 
 \begin{table*}[!t]
   \caption{Final test accuracy by method (feature selection). The best outcome for
-each dataset is highlighted in bold. The second row in header represents the number of feature selected. No selection is performed for Naive Bayes.} \label{tab:acc-fsel}
+each dataset is highlighted in bold. The second row in header represents the number of feature selected. No selection is performed for NB.} \label{tab:acc-fsel}
   \centering
   \resizebox{1.\textwidth}{!}{
 \begin{tabular}{|l|rrrrrrrrrr|}
 \toprule
- & \multicolumn{1}{c}{\textbf{Naive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{Symmetrical Uncertainty}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
+ & \multicolumn{1}{c}{\textbf{Na\"ive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{Symmetrical Uncertainty}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
   & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} &
  \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}}\\ \hline
 \textit{spam\_data} & 90.6692 & 89.2750 & 90.8516 & 90.6692 & 88.9103 & 90.4333 & 90.6692 & 90.0579 & \textbf{91.7417} & 90.6692 \\ 
@@ -460,11 +470,11 @@ each dataset is highlighted in bold. The second row in header represents the num
 	}
 \end{table*}
 
-To assert that no method is better than NB, we conduct an statistical analysis on classification accuracy results through two non-parametric tests: Wilcoxon Signed-Ranks Test --one vs. one-- and Friedman-Holm Test --one vs. all--~\cite{garcia09, derrac11}. Wilcoxon Test conducts pairwise comparisons between the reference method and the rest. A level of significance $\alpha = 0.05$ has been chosen for this experiment. The first two columns in Table~\ref{tab:friedman-fsel} show Wilcoxon's results for accuracy, where '+' symbol indicates the number of methods outperformed by each algorithm in row. Symbol '$\pm$' represents the number of wins and ties yielded by each method. The best value by column is highlighted by a shaded background.  
+To assert that no method is better than NB, we convey an statistical analysis on classification accuracy results through two non-parametric tests: Wilcoxon Signed-Ranks Test (one vs. one) and Friedman-Holm Test (one vs. all)~\cite{garcia09, derrac11}. Wilcoxon Test conducts pairwise comparisons between the reference method and the rest. A level of significance $\alpha = 0.05$ has been chosen for this experiment. The first two columns in Table~\ref{tab:friedman-fsel} show Wilcoxon's results for accuracy, where '+' symbol indicates the number of methods outperformed by each algorithm in row. Symbol '$\pm$' represents the number of wins and ties yielded by each method. The best value by column is highlighted by a shaded background.  
 
-The remaining columns show the results for the Friedman test. The first one shows a effectiveness ranking of methods, ordered from the best mark (top row) to the worst. Note that the best method (the first in the ranking) is established as the control algorithm. The second column contains the adjusted p-values for each method according to the post hoc Holm's test. The same level of significance ($\alpha = 0.05$) has been established for Friedman test.
+The remaining columns show the results for the Friedman test. The first one shows effectiveness ranking of methods, ordered from the best mark (top row) to the worst. Note that the best method is established as the control algorithm. The second column contains the adjusted p-values for each method according to the post hoc Holm's test. The same level of significance ($\alpha = 0.05$) has been established for Friedman test.
 
-According to the results shown in~\ref{tab:friedman-fsel}, we can assert SI-1,000 represent the most accurate solution for FS processing as it obtains the best ranking. Nevertheless, according to the Friedman-Holm evaluation, the difference in accuracy between SI-1,000 and the rest of methods is only statistically significant in case ten features are selected. 
+According to the results shown in Table~\ref{tab:friedman-fsel}, we can assert SI-1,000 represents the most appropriate solution for FS processing, as it obtains the best ranking. Nevertheless, according to the Friedman-Holm evaluation, the difference in accuracy between SI-1,000 and the rest of methods is only statistically significant in case ten features are selected. 
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
@@ -472,7 +482,7 @@ According to the results shown in~\ref{tab:friedman-fsel}, we can assert SI-1,00
 \scriptsize
 \caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
 \label{tab:friedman-fsel}
-\resizebox{0.75\textwidth}{!}{
+\resizebox{0.6\textwidth}{!}{
 \begin{tabular}{lcccc}
 \hline
  Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
@@ -480,7 +490,7 @@ According to the results shown in~\ref{tab:friedman-fsel}, we can assert SI-1,00
 \toprule
 SI-1,000 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25 & -- \\ 
 SI-100 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25.5 & 0.963339 \\ 
-NaiveBayes & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25.9286 & 0.931974 \\
+NB & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25.9286 & 0.931974 \\
 InfoGain-1,000 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 26.0714 & 0.92154\\ 
 InfoGain-100 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 26.1429 & 0.916328 \\ 
 OFS-1,000 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 33 & 0.462083 \\
@@ -494,8 +504,8 @@ OFS-10 & 0 & 2 & 58.1429 & 0.002313 \\
 \end{table}
 
 
-Figure~\ref{fig:fsel} depicts selection time spent by each algorithm, as well as the amount of reduction performed by each selection scheme (range from ten to one thousand features).
-Version without selection stands as the fastest alternative. Despite NB uses more variables to compute predictions, it offers better results due to it does not compute feature importances. Among the selection alternatives, OFS performs faster than the information-based selectors. However, OFS has shown in~\ref{tab:acc-fsel} to obtain less accurate schemes than its competitors. 
+Figure~\ref{fig:fsel} depicts selection time spent by each algorithm, as well as the amount of reduction performed by each selection scheme, ranging from ten to one thousand features.
+No selection stands as the fastest alternative. Despite the complete set of feature is used for predictions, this alternative offers better results due to the avoidance of feature relevance computations. Among the selection alternatives, OFS performs faster than the information-based selectors. However, OFS has shown in Table~\ref{tab:acc-fsel} to obtain less accurate schemes than its competitors. 
 
 \begin{figure}
 \begin{subfigure}{.5\textwidth}
@@ -510,14 +520,14 @@ Version without selection stands as the fastest alternative. Despite NB uses mor
   \caption{Reduction rate (in percentage)}
   \label{fig:red-fsel}
 \end{subfigure}
-\caption{Distribution representation for selection time and reduction (feature selection)}
+\caption{Box-plot representation for selection time and reduction (feature selection)}
 \label{fig:fsel}
 \end{figure}
 
 %Regarding the best selection scheme (number of features to select), 
-Although a better reduction rate is achieved in 10-features scheme (close to $100\%$ in mean), by selecting 1,000 features we can obtain much more accurate results and a reduction rate quite acceptable ($> 25\%$). Note that no selection is conducted on 4/7 problems when we choose the 1,000-features scheme (they have less attributes).
+Although a better reduction rate is achieved in 10-features scheme (close to $100\%$ in mean), by selecting 1,000 features we can yield better marks and a reduction rate quite acceptable ($> 25\%$). Note that no selection is conducted on 4/7 problems when we choose the 1,000-features scheme since there are not enough attributes to select.
 
-In conclusion, SI-1,000 can be selected as the best choice because of its good accuracy  results similar to those yielded by NB, and it also offers a good reduction rate.
+In conclusion, SI-1,000 can be elected as the best choice because of its good accuracy  results similar to those yielded by NB, and its good reduction rate. Time results do not show significant differences between information-based alternatives.
 
 
 %\begin{table*}[!t]
@@ -572,13 +582,14 @@ In conclusion, SI-1,000 can be selected as the best choice because of its good a
 
 
 \subsubsection{\textbf{Instance Selection}}
+\label{subsubsec:isel}
 
-Here, we evaluate how instance selection methods perform on drifting environments. As opposed to Section~\ref{subsubsec:fsel}, in this experiment we have included datasets with both numeric and nominal attributes. As instance selectors are not prepared for dealing with medium datasets, those problems with high number of instances ($> 100,000$) have been discarded. Additionally, we have created new artificial datasets with a lower number of examples ($10,000$ instances). 
+Here, we evaluate how instance selection methods perform on drifting environments. As opposed to Section~\ref{subsubsec:fsel}, in this experiment we have included datasets with both numerical and nominal attributes. In previous experiments instance selectors have shown impractical when dealing with medium datasets. Because of that we have discarded those problems with a number of instances $> 100,000$. Additionally, we have created new artificial datasets with a lower number of examples ($10,000$ instances). 
 
 Table~\ref{tab:acc-isel} shows accuracy results by method (column) and dataset (row). Table~\ref{tab:wilcoxon-isel} shows results on accuracy for the Wilcoxon and Friedman-Holm test, following the same scheme presented in Section~\ref{subsubsec:fsel}. From these results, we can conclude that: 
 
 \begin{itemize}
-	\item The best method in mean is updated kNN ($80.49\%$). The closest competitor (BBNR) is five units below kNN. Despite instant update provides an important advantage on kNN, other online methods, like FISH or ICF, do not respond well to changes.
+	\item The best method in mean is updated kNN without selection ($80.49\%$). The closest competitor (BBNR) is five units below kNN. Despite instant update provides an important advantage on kNN, other online methods, like FISH or ICF, do not respond well to changes.
 	\item No method is statistically better than updated kNN. Although kNN wins in each pairwise comparison in Wilcoxon tests, it only significantly overcomes ($\alpha = 0.05$) FISH and ICF according to Friedman-Holm tests.
 	\item Selection methods decides about removing instances without knowing how relevant a given instance will be in future. This fact can explain why kNN always performs better than other algorithms. %In counterpart, kNN is always updated, and it is only influenced by noise, not by redundancy.
 \end{itemize}
@@ -650,7 +661,7 @@ Regarding reduction and time, Figure~\ref{fig:fsel} depicts the distribution for
   \caption{Reduction rate (in \# instances selected)}
   \label{fig:inst-isel}
 \end{subfigure}
-\caption{Distribution representation for time and reduction (instance selection)}
+\caption{Box-plot representation for selection time and reduction (instance selection)}
 \label{fig:isel}
 \end{figure}
 
@@ -722,51 +733,17 @@ Regarding reduction and time, Figure~\ref{fig:fsel} depicts the distribution for
 %\end{table*}
 
 
-\subsubsection*{\textbf{Discretization}}
+\subsubsection{\textbf{Discretization}}
+\label{subsubsec:disc}
 
-To evaluate the ability of discretizers to reduce continuous feature space, we propose a new study with two discretizers for data streams. Naive Bayes has also been used as benchmark to evaluate discretization schemes. In this experiment, we have considered those datasets with at least one numerical attribute. Email-based dataset used in Section~\ref{subsubsec:fsel} are thus discarded.
+To evaluate the ability of discretizers to reduce continuous feature space, we propose a new study with two discretizers for data streams. NB has also been used as benchmark to evaluate discretization schemes. In this experiment, we have considered those datasets with at least one numerical attribute. Email-based dataset used in Section~\ref{subsubsec:fsel} are thus discarded.
 
-Table~\ref{tab:res-disc} and~\ref{tab:wilcoxon-disc} contain test accuracy results for Naive Bayes and NB plus some discretization scheme. From these results, we can conclude the following statements:
-
-\begin{itemize}
-	\item No method is better than NB model without discretization. Discretization schemes generated by the two discretizers yield poor results, far from those yielded by NB. 
-	\item This fact has been statistically confirmed by the non-parametrical tests. p-values obtained for OC and PiD ($<0.005$) are much lower than the level of significance established for the Friedman-Holm test ($\alpha = 0.05$).
-	\item The worst case is represented by PiD, which needs to define a long list of parameters. Among them, the minimum and the maximum value for each feature which is quite difficult to guess in streaming environments. Other important parameters like the step to create new intervals also depends on these values.
-\end{itemize}
-
-
-%\begin{table*}[!t]
-%  \caption{Discretization time, test accuracy and number of intervals results for all discretizers} \label{tab:res-disc}
-%  \centering
-%  \resizebox{.75\textheight}{!}{
-%\begin{tabular}{|l|rrrrrrrr|}
-%\toprule
-%& \multicolumn{3}{c}{\textbf{Time}} & \multicolumn{3}{c}{\textbf{Accuracy}} & \multicolumn{2}{c|}{\textbf{\# intervals}} \\
-% & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Na\"ive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Na\"ive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l|}{\textbf{OC}} \\ \hline
-%\textit{airlines} & 17.53 & 286.57 & \textbf{14.04} & 63.5817 & 63.9015 & \textbf{64.5504} & \textbf{19} & 33 \\ 
-%\textit{powersupply} & 1.11 & 1.31 & \textbf{0.64} & 63.5817 & 63.9015 & \textbf{64.5504} & 1,018 & \textbf{14} \\ 
-%\textit{elecNormNew} & 1.52 & 7.46 & \textbf{0.67} & 42.4545 & 57.1306 & \textbf{73.3625} & 2,041 & \textbf{49} \\ 
-%\textit{spambase} & 0.96 & 1.30 & \textbf{0.50} & \textbf{87.8939} & 84.2426 & 82.8081 & 29,116 & \textbf{228}\\ 
-%\textit{kddcup\_10} & 29.78 & 3,317.92 & \textbf{18.59}  & 20.1164 & 95.4200 & \textbf{97.1908} & 273 & \textbf{418}\\ 
-%\textit{poker-lsn} & 17.29 & 2,280.30 & \textbf{11.72} & 2.6008 & 52.3943 & \textbf{59.5528} & \textbf{54} & 55\\ 
-%\textit{covtypeNorm} & 38.13 & 888.83 & \textbf{28.28} & 54.0197 & 3.1984 & \textbf{60.5208} & \textbf{74} & 110\\ 
-%\textit{blips} & 18.29 & 1,927.32 & \textbf{12.02} & 30.3674 & 26.7278 & \textbf{60.9060} & \textbf{92} & 220 \\ 
-%\textit{sudden\_drift} & 6.05 & 229.00 & \textbf{2.49} & 59.3210 & 78.4012 & \textbf{83.8144} & \textbf{10} & 33 \\ 
-%\textit{gradual\_drift} & 6.09 & 421.11 & \textbf{3.63} & 52.1964 & 76.2868 & \textbf{84.7000} & \textbf{10} & 33\\ 
-%\textit{gradual\_recurring\_drift} & 19.52 & 1,722.27 & \textbf{12.52} & 26.9604 & 28.5176 & \textbf{56.7450} & \textbf{100} & 220 \\ 
-%\textit{incremental\_fast} & 12.24 & 1,039.89 & \textbf{5.68} & 49.9620 & 49.9460 & \textbf{76.3642} & 4,608 & \textbf{110}\\ 
-%\textit{incremental\_slow} & 13.41 & 987.31 & \textbf{6.06} & 49.9966 & 49.9866 & \textbf{78.0688} & 5,120 & \textbf{110}\\ 
-%\midrule
-%\textbf{MEAN} & 13.99 & 1,008.51 & \textbf{8.99} & 41.7651 & 51.3328 & \textbf{68.8225} & 3,271.92 & \textbf{125.62} \\ 
-%\bottomrule
-%\end{tabular}
-%	}
-%\end{table*}
+Table~\ref{tab:res-disc} and~\ref{tab:wilcoxon-disc} contain test accuracy results for NB classification with and without some discretization scheme. From these results, we can conclude the following statements:
 
 \begin{table*}[!t]
   \caption{Classification test accuracy after discretization} \label{tab:res-disc}
   \centering
-  \resizebox{.55\textheight}{!}{
+  \resizebox{.5\textheight}{!}{
 \begin{tabular}{|l|rrr|}
 \toprule
  & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l|}{\textbf{Na\"ive Bayes}} \\ \hline
@@ -797,7 +774,7 @@ Table~\ref{tab:res-disc} and~\ref{tab:wilcoxon-disc} contain test accuracy resul
 \scriptsize
 \caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
 \label{tab:wilcoxon-disc}
-\resizebox{0.75\textwidth}{!}{
+\resizebox{0.55\textwidth}{!}{
 \begin{tabular}{lcccccc}
 \hline
  Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
@@ -811,6 +788,13 @@ PiD & 0 & 1 & 28.3846 & 0.000023\\
 }
 \end{table}
 
+\begin{itemize}
+	\item No method is better than NB model without discretization. Discretization schemes generated by the two discretizers yield poor results, far from those yielded by NB. 
+	\item This fact has been statistically confirmed by non-parametrical tests. $p$-values obtained for OC and PiD ($<0.005$) are much lower than the level of significance established for the Friedman-Holm test ($\alpha = 0.05$).
+	\item The worst case is represented by PiD. Bad results can be explained by the fact that PiD possesses a long list of parameters to tune. Among them, the minimum and the maximum value for each feature need to be defined, which is quite difficult to guess in streaming environments. Other important parameters like the step to create new intervals also depends on these values.
+\end{itemize}
+
+Apart from the deficiencies present in accuracy, Figure~\ref{fig:time-disc} depicts an slow performance for OC as a result of the high number of data structures (binary tree, several queues, etc.) managed by OC. PiD possesses however a similar performance to NB. 
 
 \begin{figure}
 \begin{subfigure}{.5\textwidth}
@@ -825,14 +809,51 @@ PiD & 0 & 1 & 28.3846 & 0.000023\\
   \caption{Reduction rate (in \# intervals generated)}
   \label{fig:interv-disc}
 \end{subfigure}
-\caption{Distribution representation for time and reduction (discretization)}
+\caption{Box-plot representation for discretization time and reduction (discretization)}
 \label{fig:disc}
 \end{figure}
 
+Figure~\ref{fig:interv-disc} illustrates the reduction performed by each method, represented as number of intervals generated per method. In this case, PiD's inaccuracy is explained by the huge number of intervals generated by this method at the beginning (500 per feature), and during the splitting process --specially when the range specified is far from the real one--. Subsequent merging process launched by second layer is just not able to reduce so many intervals.
+
+As exposed before, evolving intervals sharply affects streaming classification as new intervals normally imply new patterns to be learned from the scratch. A trade-off between adaptation and exploitation needs to be made to allow discretization algorithms to be useful in streaming scenarios.
+
+
+%\begin{table*}[!t]
+%  \caption{Discretization time, test accuracy and number of intervals results for all discretizers} \label{tab:res-disc}
+%  \centering
+%  \resizebox{.75\textheight}{!}{
+%\begin{tabular}{|l|rrrrrrrr|}
+%\toprule
+%& \multicolumn{3}{c}{\textbf{Time}} & \multicolumn{3}{c}{\textbf{Accuracy}} & \multicolumn{2}{c|}{\textbf{\# intervals}} \\
+% & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Na\"ive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Na\"ive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l|}{\textbf{OC}} \\ \hline
+%\textit{airlines} & 17.53 & 286.57 & \textbf{14.04} & 63.5817 & 63.9015 & \textbf{64.5504} & \textbf{19} & 33 \\ 
+%\textit{powersupply} & 1.11 & 1.31 & \textbf{0.64} & 63.5817 & 63.9015 & \textbf{64.5504} & 1,018 & \textbf{14} \\ 
+%\textit{elecNormNew} & 1.52 & 7.46 & \textbf{0.67} & 42.4545 & 57.1306 & \textbf{73.3625} & 2,041 & \textbf{49} \\ 
+%\textit{spambase} & 0.96 & 1.30 & \textbf{0.50} & \textbf{87.8939} & 84.2426 & 82.8081 & 29,116 & \textbf{228}\\ 
+%\textit{kddcup\_10} & 29.78 & 3,317.92 & \textbf{18.59}  & 20.1164 & 95.4200 & \textbf{97.1908} & 273 & \textbf{418}\\ 
+%\textit{poker-lsn} & 17.29 & 2,280.30 & \textbf{11.72} & 2.6008 & 52.3943 & \textbf{59.5528} & \textbf{54} & 55\\ 
+%\textit{covtypeNorm} & 38.13 & 888.83 & \textbf{28.28} & 54.0197 & 3.1984 & \textbf{60.5208} & \textbf{74} & 110\\ 
+%\textit{blips} & 18.29 & 1,927.32 & \textbf{12.02} & 30.3674 & 26.7278 & \textbf{60.9060} & \textbf{92} & 220 \\ 
+%\textit{sudden\_drift} & 6.05 & 229.00 & \textbf{2.49} & 59.3210 & 78.4012 & \textbf{83.8144} & \textbf{10} & 33 \\ 
+%\textit{gradual\_drift} & 6.09 & 421.11 & \textbf{3.63} & 52.1964 & 76.2868 & \textbf{84.7000} & \textbf{10} & 33\\ 
+%\textit{gradual\_recurring\_drift} & 19.52 & 1,722.27 & \textbf{12.52} & 26.9604 & 28.5176 & \textbf{56.7450} & \textbf{100} & 220 \\ 
+%\textit{incremental\_fast} & 12.24 & 1,039.89 & \textbf{5.68} & 49.9620 & 49.9460 & \textbf{76.3642} & 4,608 & \textbf{110}\\ 
+%\textit{incremental\_slow} & 13.41 & 987.31 & \textbf{6.06} & 49.9966 & 49.9866 & \textbf{78.0688} & 5,120 & \textbf{110}\\ 
+%\midrule
+%\textbf{MEAN} & 13.99 & 1,008.51 & \textbf{8.99} & 41.7651 & 51.3328 & \textbf{68.8225} & 3,271.92 & \textbf{125.62} \\ 
+%\bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
+
+\section{Concluding remarks}
+\label{sec:conclusions}
 
 \section*{Acknowlegments}
 
 This work is supported by the Spanish National Research Project TIN2012-37954, TIN2013-47210-P and TIN2014-57251-P, and the Andalusian Research Plan P10-TIC-6858, P11-TIC-7765 and P12-TIC-2958. S. Ram\'irez-Gallego holds a FPU scholarship from the Spanish Ministry of Education and Science (FPU13/00047).
+
+\section*{References}
 
 %% The Appendices part is started with the command \appendix;
 %% appendix sections are then done as normal sections
