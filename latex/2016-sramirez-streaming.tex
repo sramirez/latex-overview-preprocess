@@ -87,7 +87,7 @@
 %% \address{Address\fnref{label3}}
 %% \fntext[label3]{}
 
-\title{A Survey on Streaming Data Preprocessing}
+\title{A Survey on Streaming Data Reduction}
 
 %% use optional labels to link authors explicitly to addresses:
 %% \author[label1,label2]{}
@@ -128,7 +128,7 @@
 %% MSC codes here, in the form: \MSC code \sep code
 %% or \MSC[2008] code \sep code (2000 is the default)
 
-machine learning \sep data streams \sep data preprocessing
+machine learning \sep data streams \sep data reduction \sep data preprocessing
 
 \end{keyword}
 
@@ -145,10 +145,26 @@ machine learning \sep data streams \sep data preprocessing
 \section{Data streaming and concept drift}
 \label{sec:stream}
 
-\section{Feature selection for data streaming}
-\label{sec:fs}
+\section{Data reduction on data streams}
 
-Many feature selection algorithms for streaming data have been proposed in the literature. Most of them are naturally incremental methods but others can process streams in an online fashion. Also depending on what set is getting new elements, we can make a further distinction between methods. Some feature selection methods consider that feature arrive one by one while feature vectors (examples) are always available~\citep{wu10, eskandari16}. In contrast, other online methods assume that the instances always arrive sequentially and the feature set can change or not. The last approach is more natural in real-world problems so we will focus on these methods. 
+Among all data preprocessing techniques, data reduction is one of its most relevant field despite not being a mandatory its application. Data reductions  aims at reducing raw data, whilst maintaining its structure and quality (sometimes with improvements). Although optional in theory, reduction becomes pretty essential when size of data exceeds the performance capabilities of mining algorithms. Sometimes, no reduction implies the execution of a given algorithm is impractical or even unfeasible. 
+
+Depending on where reduction is performed, different type of techniques can be listed:
+
+\begin{itemize}
+	\item Dimensionality reduction: Feature Selection (FS) or Feature Extraction. FS eliminates irrelevant or redundant features, whereas Feature Extraction creates a simpler feature space through some transformation in the original one.
+	\item Instance reduction: Instance Selection (IS) or instance generation. IS is aimed at intelligently selecting those instances more representatives for the problem. Instance generation methods try to generate new instances that fill gaps in concept definitions.
+	\item Feature space simplification: normalization, discretization, etc. Discretization summarizes a set of continuous values into a finite set of discrete intervals.
+\end{itemize}
+
+Better understandability, a more rapid learning process, a better generalization capabilities, are among the many advantages of data reduction. Despite all these benefits, not many proposals that are able to cope with online learning problem can be found in the literature~\cite{garcia14}. Most of them are just incremental algorithms, originally designed to manage finite datasets. Most of IS techniques, for instance, are based on time-consuming neighbor searches and complex processes that typically imply multiple passes over data. Their adaptation to online processing is a major concern that we will try to summarize in this work.
+
+\subsection{Dimensionality reduction}
+\label{subsec:dimred}
+
+Many FS algorithms for streaming data have been proposed in the literature. Most of them are naturally incremental designed for offline processing, whereas many others are specifically thought to cope with flowing streams in an online manner~\cite{bolon15}. 
+
+Further distinction can be also made between online methods, depending on what kind of elements feeds them. Some FS methods suppose that features arrive one by one while feature vectors (examples) are always available~\citep{wu10, eskandari16}. In contrast, other online methods assume that the instances always arrive sequentially and the feature set may change or not~\cite{kata05}. 
 
 In streaming learning, the feature space is also affected by the changes in data distribution. \textbf{Feature drifts} occur whenever the relevance of a given attribute $A_i$ changes over time when new instances arrive at the system~\cite{barddal15}. Let $rel(A_i, t_i)$ be the relevance function that determines the importance of $A_i$ in $t_i$ time of the stream. There exits a feature drift iff $rel(A_i)$ changes between $t_j$ and $t_k$ timestamps.
 
@@ -165,39 +181,43 @@ As the set of selected features evolves over time, it is likely that the feature
 	\item Lossless Homogenizing (Lossless): Lossless is similar to the previous case, except that here the feature space in the test set is considered in the conversion. There exist a homogenization between spaces, for example, by unifying both spaces and padding with zeros any missing feature in the other set. This conversion deems both space and time, so it can be seen as the best alternative.
 \end{itemize}
 
-In the followings, we enumerate those algorithms that address the streaming feature selection problem. Table~\ref{tab:fs} details the type of selection method and the space conversion performed by each algorithm.
+In this paper we will focus on \textbf{online} techniques that allow new instances and features, because they represents a more natural scenario in real-world problems. In the followings, we present a list formed by the most relevant algorithms on this topic:
 
 \begin{itemize}
-	\item Katakis et al.~\cite{kata05} was among the first to introduce the problem of dynamic feature space over time in data streams. They proposed a technique that includes a feature ranking (filter) method to select relevant features. As the importance score of each feature can be measured using many cumulative functions like information gain, $\chi^2$ or mutual information; it is a versatile solution for feature ranking.
+	\item Katakis et al.~\cite{kata05} was among the first to introduce the problem of dynamic feature space over time in data streams. They proposed a technique that includes a feature ranking (filter) method to select relevant features. As the importance score of each feature can be measured using many cumulative functions like Information Gain (IG), $\chi^2$ or mutual information; it is a versatile and direct solution for feature ranking.
 	\item Carvalho et al.~\cite{carva06} proposed Extremal Feature Selection (EFS), an online feature selection method that uses the weights computed by an online classifier (Modified Balance Winnow) to measure the relevance of features. The score is computed as the absolute difference between the positive and negative weights for each feature.
-	\item Wenerstrom and Giraud-Carrier~\cite{wener06} proposed a dynamically-sized ensemble algorithm (called FAE) composed of learners with different feature space sets. Learners are created when the top features changes over a threshold or when the ensemble's performance degrades too much. FAE is also based on a feature ranking method that cumulates $\chi^2$-based scores. FAE performs a Lossy-L conversion between spaces. %According to the author's experiments, FAE performs better than the Katakis's approach. %Lossy-L conversion
-	\item Masud et al.~\cite{masud10} proposed a data stream classification technique (DXMiner), which uses the deviation weight measure to rank features in a single pass. Furthermore, DXMiner naturally address the problem of novel classes (concept-evolution) by building a decision boundary around the training data. In contrast to previous methods, DXMiner uses lossless conversion, which is useful to detect novel classes. To rank features in the test feature space, DXMiner uses a unsupervised technique (e.g., the highest frequency).
-	\item Nguyen et al.~\cite{nguyen12} use an ensemble technique based on windowing to detect feature drifts. The algorithm is based on a ensemble of classifiers, where each classifier has its own feature set. If a drift is detected, the ensemble is updated with a new classifier together with a new feature subset; otherwise, each classifier is updated accordingly. Fast Correlation-Based Filter (FCBF) is the feature selection method used in this method. FCBF heuristically applies a backward selection technique with a sequential search strategy to remove irrelevant and redundant features.
-	\item In~\cite{gomes14}, the authors propose an algorithm to mine recurring concepts (called MReC-DFS). Here, the same online selector method proposed in~\cite{kata05} is used. Instead of selecting a fixed number of features, they propose to use either a fixed threshold or an adaptive one based on percentiles. They also compare the effects of using different space conversions~\cite{masud10} (like Lossy-F, Lossy-L or Lossless).
-	\item Wang et al.~\cite{wang14} proposed an $\varepsilon$-greedy online feature selection method (called OFS) based on a classical technique that makes a trade-off between exploration and exploitation of features. The algorithm spends $\varepsilon$ trials on exploration by randomly choosing $N$ attributes from the whole set of attributes, and the remaining 1-$\varepsilon$ trials on exploitation by choosing the $N$ attributes for which the linear classifier has nonzero values. %This selection method also presents a lossy adaptation since the feature space of the test test is not considered in the selection process.
+	%\item Wenerstrom and Giraud-Carrier~\cite{wener06} proposed a dynamically-sized ensemble algorithm (called FAE) composed of learners with different feature space sets. Learners are created when the top features changes over a threshold or when the ensemble's performance degrades too much. FAE is also based on a feature ranking method that cumulates $\chi^2$-based scores. FAE performs a Lossy-L conversion between spaces. %According to the author's experiments, FAE performs better than the Katakis's approach. %Lossy-L conversion
+	\item Masud et al.~\cite{masud10} proposed a streaming classification technique (DXMiner), which uses the deviation weight measure to rank features in the predictive phase. Furthermore, DXMiner naturally address the problem of novel classes (concept-evolution) by building a decision boundary around the training data. In contrast to previous methods, DXMiner uses lossless conversion, which is useful to detect novel classes. To rank features in the test space, DXMiner uses a unsupervised technique (e.g., the highest frequency in the batch) to select those feature more representative for future predictions. Note that unsupervised selection requires a batch of elements to compute such statistics.
+	\item Nguyen et al.~\cite{nguyen12} use an ensemble technique based on windowing to detect feature drifts. The algorithm is based on a ensemble of classifiers, where each classifier has its own feature set. If a drift is detected, the ensemble is updated with a new classifier together with a new feature subset; otherwise, each classifier is updated accordingly. Fast Correlation-Based Filter (FCBF) is the feature selection method used in this method, which is based on Symmetrical Uncertainty (SU) measure. FCBF heuristically applies a backward technique with a sequential search strategy to remove irrelevant and redundant features.
+	\item In~\cite{gomes14}, the authors propose an algorithm to mine recurring concepts (called MReC-DFS). Here, the authors adopt the same selection solution proposed in~\cite{kata05}. Instead of selecting a fixed number of features, they propose to use either a fixed threshold or an adaptive one based on percentiles. They also compare the effects of using different space conversions~\cite{masud10} (like Lossy-F, Lossy-L or Lossless).
+	\item Wang et al.~\cite{wang14} proposed an $\varepsilon$-greedy online feature selection method (called OFS) based on a classical technique that makes a trade-off between exploration and exploitation of features. The algorithm spends $\varepsilon$ steps on exploration by randomly choosing $N$ attributes from the whole set of attributes, and the remaining 1-$\varepsilon$ steps on exploitation by choosing the $N$ attributes for which the linear classifier has nonzero values. %This selection method also presents a lossy adaptation since the feature space of the test test is not considered in the selection process.
 In this work, no feature drift is addressed explicitly, and no comparison with previous works is performed.
 \end{itemize}
+
+Table~\ref{tab:fs} details the type of selection method and the space conversion performed by each algorithm. Two remarkable selection strategies emerges from this summary: one based on information filtering and another based on classifier weights. 
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
 \centering
 \scriptsize
-\caption{Summary description of streaming feature selection methods. Information about the type of selector (wrapper or filter) and space conversion used is included.}
+\caption{Summary description of streaming feature selection methods. Information about the type of selector (wrapper or filter) and space conversion used is presented below.}
 \label{tab:fs}
 \begin{tabular}{ lcc }
 \toprule
 {\bf Method} & {\bf Type of selector} & {\bf Space conversion}\\
 \midrule
-Katakis's method~\cite{kata05} & Filter ($\chi^2$) & Lossy-L\\
-EFS~\cite{carva06} & Wrapper (classifier's weights) & Lossy-L\\
-FAE~\cite{wener06} & Filter ($\chi^2$) & Lossy-L\\
-DXMiner~\cite{masud10} & Wrapper (deviation weight + unsupervised) & Lossless\\
-HEFT-Stream~\cite{nguyen12} & Filter (FCBF) & Lossy-F, Lossy-L, Lossless\\
-MReC-DFS~\cite{gomes14} & Filter ($\chi^2$) & all\\
-OFS~\cite{wang14} & Wrapper (classifier's weights) & Lossy-L\\
+Katakis' method~\cite{kata05} & Filter (IG, $\chi^2$, etc.) & Lossy-L\\
+EFS~\cite{carva06} & Wrapper (online classifier's weights) & Lossy-L\\
+%FAE~\cite{wener06} & Filter ($\chi^2$) & Lossy-L\\
+DXMiner~\cite{masud10} & Filter (deviation weight) + unsupervised & Lossless\\
+HEFT-Stream~\cite{nguyen12} & Filter (SU) & all\\
+MReC-DFS~\cite{gomes14} & Filter (IG, $\chi^2$, etc.) & all\\
+OFS~\cite{wang14} & Wrapper (online classifier's weights) & Lossy-L\\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Besides FS dimensionality reduction can be accomplished through an artificial mapping between the original space of features and a new space of fewer dimensions. Feature extraction techniques, although less popular than FS ones, has shown its abilities in many predictive problems. One of the most important contributions here is Principal Component Analysis (PCA). In~\cite{nie16}, two online versions of PCA based on gradient are studied in depth. The aim of this paper is to obtain an online model with the optimal difference between cumulative losses between it and the best offline alternative. Although optimal, online PCA is not able to update projections in less than $O(n^3)$ per iteration~\cite{hazan10}. Thus, more efforts are required in this topic to develop real online feature extraction solutions.
 
 
 %  \begin{tabular}{lcc}
@@ -215,7 +235,8 @@ OFS~\cite{wang14} & Wrapper (classifier's weights) & Lossy-L\\
 
 %Finally, in~\cite{shar06}, the authors presented an algorithm for efficiently performing threshold function queries to manage \textbf{distributed data streams}. This function queries are typically used for feature selection. The algorithms are based on a geometric analysis of the problem. Upon initialization, the algorithm collects frequency counts from all the streams, and calculate the initial result of the query. In addition, a numerical constraint on the data received on each individual stream is defined. As data arrives on the streams, each node verifies that the constraint on its stream has not been violated. The geometric analysis of the problem guarantees that as long as the constraints on all the streams are upheld, the result of the query remains unchanged, and thus no communication is required. If a constraint on one of the streams is violated, new data is gathered from the streams, the query is reevaluated, and new constraints are set on the streams. 
 
-\section{Instance selection for data streaming}
+\subsection{Instance selection}
+\label{subsec:isel}
 
 Lazy learning algorithms have been broadly used to address several problems in machine learning. However, case-bases naturally deteriorate and grow with usage over time, which affects data distribution and the decision boundaries underlying data.
 
@@ -277,7 +298,8 @@ NEFCS+SRR~\cite{lu16} & competence & yes\\
 %
 
 
-\section{Discretization for data streaming}
+\subsection{Discretization}
+\label{subsec:disc}
 
 Discretization, like other techniques, is also affected by changes in data distribution. Number and structure of discretization intervals may change over time as stationarity is not guaranteed in streaming environments. Therefore, if there appears a drift in distribution it  may be desirable that discretization intervals also move following the concept drift.
 
@@ -384,8 +406,7 @@ Not all datasets described above have been considered in every experiment. Some 
 
 No previous fixed partitioning has been performed on these datasets, instead an online evaluation approach has been elected to asses the quality of methods, known as \textbf{interleaved test-then-train}. This technique, proposed by Bifet et al. in~\cite{bifet09}, defines a model in which each example/batch (arriving at time $t$) is evaluated against $t-1$-model, and then it serves as input to update that model and forms $t$-model. Interleaved model arises as a very accurate for streaming evaluate since it never tests models on already seen elements. This kind evaluation however requires much more evaluations, as many as elements in the training set.
 
-Preprocessing techniques used in experiments are listed and grouped by task in Table~\ref{tab:parameters}. The default parameter values has been established according to the authors' criterion.
-Common parameters --like window size  or the number of initial elements to consider before starting the reduction process-- tends to have common values within the same group. A window size equals to one means that the algorithms works in an online way, whereas a value higher than one implies a batch-based processing. For instance, feature selection and discretization methods exhibit an online behavior, whereas most of instance selectors process elements in batches (except FISH and kNN).
+Reduction techniques used in experiments are listed and grouped by task in Table~\ref{tab:parameters}. The default parameter values has been established according to the authors' criterion. Common parameters --like window size or the number of initial elements to consider before starting the reduction process-- tends to have common values within the same group. A window size equals to one means that the algorithms works in an online way, whereas a value higher than one implies a batch-based processing. For instance, feature selection and discretization methods exhibit an online behavior, whereas most of instance selectors process elements in batches (except FISH and kNN).
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
@@ -401,7 +422,7 @@ Common parameters --like window size  or the number of initial elements to consi
   \textbf{Feature selection} & window size = 1 (common)\\
   NB & --\\
   IG & --\\
-  SI & --\\
+  SU & --\\
   OFS & $\eta$ = 0.2, $\lambda$ = 0.01\\
   \hline
   \textbf{Discretization} & initial elements = 100, window size = 1 (common)\\
@@ -440,7 +461,7 @@ Once the experimental framework and its design is defined, we analyze the experi
 
 Here, we evaluate how well selection of relevant features is performed by the streaming methods proposed in the literature. As most of these methods assumes features are discrete, we have only selected from Table~\ref{tab:datasets} those problems with no numerical attribute. Note that all these datasets comes from the text mining field, in which each attribute represents the presence or the absence of a given word. These datasets fits well for feature selection as the corpus of words/features is normally quite large.
 
-Firstly, in Table~\ref{tab:acc-fsel}, we measure the classification accuracy held by the three feature selectors considered in the experimental framework: IG, SI, and OFS; plus NB without selection. From results we can claim that NB yields better results when all features are available during prediction. None of the selection schemes show better effectiveness than NB. However, IG and SI generate results pretty close to NB, with the advantage of generating much simpler solutions (as can be seen in Figure~\ref{fig:red-fsel}). 
+Firstly, in Table~\ref{tab:acc-fsel}, we measure the classification accuracy held by the three feature selectors considered in the experimental framework: IG, SU, and OFS; plus NB without selection. From results we can claim that NB yields better results when all features are available during prediction. None of the selection schemes show better effectiveness than NB. However, IG and SU generate results pretty close to NB, with the advantage of generating much simpler solutions (as can be seen in Figure~\ref{fig:red-fsel}). 
 
 Comparing selectors, we can note that information-based methods are more accurate than OSF (based on feature weighting). Specially remarkable are the \textit{spam\_data} and \textit{usenet\_recurrent} cases, where even with only ten words the classifier is able to predict perfectly all examples. 
 %Similar results can also be found in \textit{usenet1}, and \textit{usenet2}, which are skinny problems that only get reduced with the lowest selection scheme (10 features).  
@@ -453,7 +474,7 @@ each dataset is highlighted in bold. The second row in header represents the num
   \resizebox{1.\textwidth}{!}{
 \begin{tabular}{|l|rrrrrrrrrr|}
 \toprule
- & \multicolumn{1}{c}{\textbf{Na\"ive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{Symmetrical Uncertainty}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
+ & \multicolumn{1}{c}{\textbf{Na\"ive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{SU}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
   & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} &
  \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}}\\ \hline
 \textit{spam\_data} & 90.6692 & 89.2750 & 90.8516 & 90.6692 & 88.9103 & 90.4333 & 90.6692 & 90.0579 & \textbf{91.7417} & 90.6692 \\ 
@@ -474,7 +495,7 @@ To assert that no method is better than NB, we convey an statistical analysis on
 
 The remaining columns show the results for the Friedman test. The first one shows effectiveness ranking of methods, ordered from the best mark (top row) to the worst. Note that the best method is established as the control algorithm. The second column contains the adjusted p-values for each method according to the post hoc Holm's test. The same level of significance ($\alpha = 0.05$) has been established for Friedman test.
 
-According to the results shown in Table~\ref{tab:friedman-fsel}, we can assert SI-1,000 represents the most appropriate solution for FS processing, as it obtains the best ranking. Nevertheless, according to the Friedman-Holm evaluation, the difference in accuracy between SI-1,000 and the rest of methods is only statistically significant in case ten features are selected. 
+According to the results shown in Table~\ref{tab:friedman-fsel}, we can assert SU-1,000 represents the most appropriate solution for FS processing, as it obtains the best ranking. Nevertheless, according to the Friedman-Holm evaluation, the difference in accuracy between SU-1,000 and the rest of methods is only statistically significant in case ten features are selected. 
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
@@ -488,15 +509,15 @@ According to the results shown in Table~\ref{tab:friedman-fsel}, we can assert S
  Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
  & $+$ & $\pm$ & & \\
 \toprule
-SI-1,000 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25 & -- \\ 
-SI-100 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25.5 & 0.963339 \\ 
+SU-1,000 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25 & -- \\ 
+SU-100 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25.5 & 0.963339 \\ 
 NB & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 25.9286 & 0.931974 \\
 InfoGain-1,000 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 26.0714 & 0.92154\\ 
 InfoGain-100 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 26.1429 & 0.916328 \\ 
 OFS-1,000 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 33 & 0.462083 \\
 OFS-100 & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 9 & 33.6429 & 0.426894 \\
 InfoGain-10 & 0 & \cellcolor[gray]{0.8} 9  & 50.7143 & 0.018086 \\ 
-SI-10 & 0 & \cellcolor[gray]{0.8} 9 & 50.8571 & 0.017455 \\ 
+SU-10 & 0 & \cellcolor[gray]{0.8} 9 & 50.8571 & 0.017455 \\ 
 OFS-10 & 0 & 2 & 58.1429 & 0.002313 \\ 
 \hline
 \end{tabular}
@@ -527,7 +548,7 @@ No selection stands as the fastest alternative. Despite the complete set of feat
 %Regarding the best selection scheme (number of features to select), 
 Although a better reduction rate is achieved in 10-features scheme (close to $100\%$ in mean), by selecting 1,000 features we can yield better marks and a reduction rate quite acceptable ($> 25\%$). Note that no selection is conducted on 4/7 problems when we choose the 1,000-features scheme since there are not enough attributes to select.
 
-In conclusion, SI-1,000 can be elected as the best choice because of its good accuracy  results similar to those yielded by NB, and its good reduction rate. Time results do not show significant differences between information-based alternatives.
+In conclusion, SU-1,000 can be elected as the best choice because of its good accuracy  results similar to those yielded by NB, and its good reduction rate. Time results do not show significant differences between information-based alternatives.
 
 
 %\begin{table*}[!t]
@@ -536,7 +557,7 @@ In conclusion, SI-1,000 can be elected as the best choice because of its good ac
 %  \resizebox{.75\textheight}{!}{
 %\begin{tabular}{|l|rrrrrrrrrr|}
 %\toprule
-% & \multicolumn{1}{c}{\textbf{Naive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{Symmetrical Uncertainty}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
+% & \multicolumn{1}{c}{\textbf{Naive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{SU}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
 %  & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} &
 % \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}}\\ \hline
 %\textit{spam\_data} & 4.22 & 16.94 & 20.85 & 28.28 & 15.79 & 19.68 & 27.79 & 9.89 & \textbf{1.04} & 21.79 \\ 
