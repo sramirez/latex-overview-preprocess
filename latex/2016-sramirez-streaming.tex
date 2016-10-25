@@ -141,25 +141,47 @@ machine learning \sep data streams \sep data reduction \sep data preprocessing
 \label{sec:intro}
 
 
+Data preprocessing~\cite{garcia14} is one of the major step within the Knowledge Discovery from Data (KDD) process. Despite other steps, like Data Mining, hold a greater popularity than data preprocessing, it usually involves more time and effort in the discovery process ($> 50\%$)~\cite{pyle99}. Raw data normally comes with imperfections such as inconsistencies, missing values, noise and/or redundancy. Performance of mining will thus be undermined if it is fed with low-quality data.
+
+Data preparation, as part of preprocessing, is aimed at transforming raw data into high-quality data that properly fits the subsequent mining process. It is considered as mandatory, and includes techniques such as integration, normalization, cleaning and transformation.
+
+In recent times, the amount of data generated is growing exponentially following the wave of Big Data~\cite{mayer13}. Data grow in three dimensions --features, examples and cardinality--, demanding to a simplification in data complexity that allow its processing. Data reduction techniques perform this simplification by selecting and deleting redundant and noisy features/instances (feature and instance selection, respectively), or by discretizing complex continuous spaces (data discretization). In data reduction, resulting data maintain the original structure and meaning of the input data, but with a more manageable size. Although optional, data reduction becomes essential when complexity threshold of the learning process is surpassed. Faster learning, improved generalization capability, and better understandability of data, are among the many benefits of using data reduction. 
+%Data reduction is compounded by several families of techniques, such as feature selection (removes columns), instance selection (removes rows), and discretization (transforms continuous inputs into intervals).
+
+[paragraph about data streams]
+
+Despite the importance of data reduction, not many data reduction methods can be found in the literature for online learning. Most of them are just incremental algorithms, originally designed to manage finite datasets. And direct adaptation of standard reduction algorithms to the online environment is not straightforward in most of cases because methods are originally designed to have in advance the complete dataset in memory. 
+
+Most of IS techniques, for instance, usually perform multiple passes over data and are based on time-consuming neighbor searches that makes them useless for incremental learning~\cite{garcia14}. On the contrary FS techniques are naturally incremental. Yet they suffers from other problems like feature drifting, concept evolution or streaming features~\cite{masud10}. Online discretization is another unsolved problem since evolving discretization schemes sharply affect the performance of predictive models. Adaptation of reduction techniques is thus a major concern that we aims at surveying in this work.
+
+[Description of survey/proposal]
+
+[Sections description]
+
 
 \section{Data streaming and concept drift}
 \label{sec:stream}
 
-\section{Data reduction on data streams}
+\section{Data reduction}
+\label{sec:datared}
+%In data preprocessing, despite not being mandatory its application~\cite{garcia14}. This phase aims at reducing/simplifying raw data, whilst maintaining its original structure and quality, sometimes with unexpected improvements. Although optional in theory, reduction becomes essential when size of data exceeds the performance capabilities of standard mining algorithms. Sometimes, no reduction implies the execution of a given algorithm is impractical or even unfeasible. 
 
-In data preprocessing, reduction is one of the most relevant phases despite not being mandatory its application~\cite{garcia14}. This phase aims at reducing/simplifying raw data, whilst maintaining its original structure and quality, sometimes with unexpected improvements. Although optional in theory, reduction becomes essential when size of data exceeds the performance capabilities of standard mining algorithms. Sometimes, no reduction implies the execution of a given algorithm is impractical or even unfeasible. 
-
-Depending on where reduction is performed, different families of techniques can be listed:
+As mentioned before, data preprocessing is one of the key phases in KDD. Reduction simplifies input data, whilst maintaining its original structure and quality; sometimes with improvements in predictive performance. Depending on where reduction is performed, different families of techniques can be listed:
 
 \begin{itemize}
-	\item Dimensionality reduction: Feature Selection (FS) or Feature Extraction. FS eliminates irrelevant or redundant features/columns, whereas Feature Extraction generates a simpler feature space through some transformation in the original space.
-	\item Instance reduction: Instance Selection (IS) or instance generation. IS is aimed at intelligently selecting those instances more representatives. Instance generation methods can also generate new instances to fill gaps in concept definitions.
-	\item Feature space simplification: normalization, discretization, etc. Discretization summarizes a set of continuous values into a finite set of discrete intervals.
+	\item \textbf{Dimensionality reduction}: Feature Selection (FS) or Feature Extraction. FS eliminates irrelevant or redundant features/columns, whereas Feature Extraction generates a simpler feature space through some transformation in the original space. The aim of feature reduction is to yield a minimum set of features so that the subsequent distribution probability of classes remains as unchanged as possible. As FS maintains the
+original features, it is more convenient for model interpretation. Depending on the relationship between the selector and the predictive algorithms, we can classify FS algorithms into three categories: filters, which acts before the learning process and with independence to it; wrappers, which uses the inductive algorithm to evaluate subgroups of features; and embedded, where the search is part of the learning process. Wrappers methods tend to be more accurate than filters, but more complex. Embedded methods are less costly than wrappers, but more dependent.
+	\item \textbf{Instance reduction}: Instance Selection (IS) or instance generation. IS is aimed at intelligently selecting those instances more representatives. Instance generation methods can also generate new instances to fill gaps in concept definitions. IS differs from data sampling in that the former categorizes instances depending on the problem, whereas sampling is more stochastic. Based upon the kind of search implemented by the instance selection algorithms, they can be classified into three categories: condensation, which remove redundant points far from the borders; edition, which removes noisy points close to the boundaries; or hybrid, which combines both noise and redundancy removal.
+	\item \textbf{Feature space simplification}: normalization, discretization, etc. Discretization summarizes a set of continuous values into a finite set of discrete intervals. The result is a set of nominal features that can be used by any mining process. Although most of mining algorithms work with continuous data, many of them can only cope with nominal features, specially those based on statistical and information measures, like Na\"ive Bayes~\cite{yang09}. Others algorithms, like tree-based classifiers~\cite{hu09}, generate more accurate and compact results when using discrete values. Good discretizers try to achieve the best predictive performance derived from discrete data, while reducing the number intervals as much as possible. Based upon how intervals are generated by discretizers, they are grouped into: splitting methods, which split the most promising interval in each iteration into two partitions; and merging methods, which merge the best two adjacent intervals in each trial.
 \end{itemize}
 
-A faster learning, and a better understandability and improved generalization process, are among the many advantages of data reduction. Despite all these benefits, not many proposals can be found in the literature~\cite{garcia14} that cope with online problems. Most of them are just incremental algorithms, originally designed to manage finite datasets.
+\section{Data reduction on data streams}
+\label{sec:redstream}
 
-Direct adaptation of standard reduction algorithms to the online environment is not possible in most of cases because they are originally designed to have the complete dataset in advance. Most of IS techniques (Section~\ref{subsec:isel}), for instance, usually perform multiple passes over data and are based on time-consuming neighbor searches that makes them useless for incremental learning. On the contrary FS techniques are naturally incremental (Section~\ref{subsec:dimred}). Yet they suffers from other problems like feature drifting, concept evolution or streaming features. Online discretization is another unsolved problem in streaming environments since evolving discretization schemes sharply affect predictive models. Adaptation of reduction techniques is thus a major concern that we aims at addressing in this work.
+In streaming scenarios, reduction techniques are demanded to process elements one-by-one, with the maximum velocity, and without making any assumptions about data distribution in advance. In next sections, we describe those reduction proposals that address the streaming problem. These proposals are grouped by family: dimensionality reduction (Section~\ref{subsec:dimred}), instance reduction (Section~\ref{subsec:isel}), and feature space simplification (Section~\ref{subsec:disc}).
+%A faster learning, and a better understandability and improved generalization process, are among the many advantages of data reduction. Despite all these benefits, not many proposals can be found in the literature~\cite{garcia14} that cope with online problems. Most of them are just incremental algorithms, originally designed to manage finite datasets.
+
+%Direct adaptation of standard reduction algorithms to the online environment is not possible in most of cases because they are originally designed to have the complete dataset in advance. Most of IS techniques (Section~\ref{subsec:isel}), for instance, usually perform multiple passes over data and are based on time-consuming neighbor searches that makes them useless for incremental learning. On the contrary FS techniques are naturally incremental (Section~\ref{subsec:dimred}). Yet they suffers from other problems like feature drifting, concept evolution or streaming features. Online discretization is another unsolved problem in streaming environments since evolving discretization schemes sharply affect predictive models. Adaptation of reduction techniques is thus a major concern that we aims at addressing in this work.
 
 \subsection{Dimensionality reduction}
 \label{subsec:dimred}
@@ -239,7 +261,7 @@ Besides FS dimensionality reduction can be accomplished through an artificial ma
 
 %Finally, in~\cite{shar06}, the authors presented an algorithm for efficiently performing threshold function queries to manage \textbf{distributed data streams}. This function queries are typically used for feature selection. The algorithms are based on a geometric analysis of the problem. Upon initialization, the algorithm collects frequency counts from all the streams, and calculate the initial result of the query. In addition, a numerical constraint on the data received on each individual stream is defined. As data arrives on the streams, each node verifies that the constraint on its stream has not been violated. The geometric analysis of the problem guarantees that as long as the constraints on all the streams are upheld, the result of the query remains unchanged, and thus no communication is required. If a constraint on one of the streams is violated, new data is gathered from the streams, the query is reevaluated, and new constraints are set on the streams. 
 
-\subsection{Instance selection}
+\subsection{Instance reduction}
 \label{subsec:isel}
 
 Lazy learning has been broadly used in predictive analytics~\cite{cover67}. Yet case-bases naturally deteriorate and grow with usage over time, which affects data distribution and the decision boundaries underlying data.
@@ -307,7 +329,7 @@ Another relevant topic to be considered when electing instance selectors is whet
 %
 
 
-\subsection{Discretization}
+\subsection{Feature space simplification}
 \label{subsec:disc}
 
 Discretization algorithms needs to deal with concept drift, as selection methods do. Number and structure of discretization intervals may change over time as stationarity is not guaranteed in streaming environments. Therefore, if there appears a drift in distribution it may be desirable that discretization intervals also move following the concept drift.
