@@ -118,6 +118,8 @@
 \begin{abstract}
 %% Text of abstract
 
+Data reduction has become an essential preprocessing technique in current knowledge discovery scenarios, mainly dominated by increasingly larger datasets. Data reduction techniques aims at reducing the complexity inherent to these datasets so that they can be easily processed by current mining solutions. It is well-known that data reduction offers many advantages, among others: a faster and more precise learning process, and a more understandable structure for raw data. Literature about reduction on static data is quite rich. On the contrary reduction on data streams still looks undeveloped, despite online learning is growing in importance thanks to the development of Internet, and technologies for data collection (sensors). Throughout this survey, we summarize, categorize and analyze those contributions on data reduction that cope with streaming data. Although some other works have given an overview of reduction tasks separately, this work aims at providing a thorough and comprehensive study of data reduction in its whole. This survey also takes into account the existing relationships between the different families of methods (feature and instance selection, and discretization). Empirically, we convey experiments over the most relevant contributions in terms of predictive performance, reduction rate and time-usage. Precision results have been further analyzed by means of a nonparametric statistical study. Some general advises about algorithms, as well as the future challenges to be faced in next years are also highlighted in this manuscript.
+
 \end{abstract}
 
 \begin{keyword}
@@ -128,7 +130,7 @@
 %% MSC codes here, in the form: \MSC code \sep code
 %% or \MSC[2008] code \sep code (2000 is the default)
 
-machine learning \sep data streams \sep data reduction \sep data preprocessing
+machine learning \sep data streams \sep data preprocessing \sep data reduction 
 
 \end{keyword}
 
@@ -141,23 +143,24 @@ machine learning \sep data streams \sep data reduction \sep data preprocessing
 \label{sec:intro}
 
 
-Data preprocessing~\cite{garcia14} is one of the major step within the Knowledge Discovery from Data (KDD) process. Despite other steps, like Data Mining, hold a greater popularity than data preprocessing, it usually involves more time and effort in the discovery process ($> 50\%$)~\cite{pyle99}. Raw data normally comes with imperfections such as inconsistencies, missing values, noise and/or redundancy. Performance of mining will thus be undermined if it is fed with low-quality data.
+Data preprocessing~\cite{garcia14} is one of the major step within the Knowledge Discovery from Data (KDD) process. Despite being less known that other steps like data mining, data preprocessing usually involves more effort and time in the entire discovery process ($> 50\%$ of total effort)~\cite{pyle99}. Raw data usually comes with imperfections such as inconsistencies, missing values, noise and/or redundancy. Performance of subsequent learning will thus be undermined if the process is fed with low-quality data. Thus low-quality data usually imply low-quality decisions.
 
-Data preparation, as part of preprocessing, is aimed at transforming raw data into high-quality data that properly fits the subsequent mining process. It is considered as mandatory, and includes techniques such as integration, normalization, cleaning and transformation.
+Data preparation, as part of preprocessing, is aimed at transforming raw data into high-quality data that properly fits the subsequent mining process. Preparation is considered as a mandatory step, and it includes techniques such as integration, normalization, cleaning and transformation.
 
-In recent times, the amount of data generated is growing exponentially following the wave of Big Data~\cite{mayer13}. Data grow in three dimensions --features, examples and cardinality--, demanding to a simplification in data complexity that allow its processing. Data reduction techniques perform this simplification by selecting and deleting redundant and noisy features/instances (feature and instance selection, respectively), or by discretizing complex continuous spaces (data discretization). In data reduction, resulting data maintain the original structure and meaning of the input data, but with a more manageable size. Although optional, data reduction becomes essential when complexity threshold of the learning process is surpassed. Faster learning, improved generalization capability, and better understandability of data, are among the many benefits of using data reduction. 
+In recent times, the amount of data generated is growing exponentially following the wave of Big Data~\cite{mayer13}. Data grow in three dimensions --features, examples and cardinality--, demanding to a simplification in data complexity that allow its processing by standard algorithms. Data reduction techniques perform this simplification by selecting and deleting redundant and noisy features/instances (in feature and instance selection, respectively), or by discretizing complex continuous spaces (in data discretization). In data reduction resulting data maintain the original structure and meaning of the input data, but with a more manageable size. Although optional in theory, data reduction becomes essential when complexity limits are surpassed in standard algorithms. Faster learning, improved generalization capability, and better understandability of data, are among the many benefits of data reduction. 
 %Data reduction is compounded by several families of techniques, such as feature selection (removes columns), instance selection (removes rows), and discretization (transforms continuous inputs into intervals).
 
-[paragraph about data streams]
+In many cases input data are not available in advance but they arrive in form of continuous examples or grouping batches, called data streams~\cite{gama10}. Streams demand to a constant and never-ending learning process (known as online learning) that incrementally model underlying concepts. Sometimes these concepts shift their boundaries or change completely, thus forcing the learning process to adapt to them~\cite{gama14}.
 
-Despite the importance of data reduction, not many data reduction methods can be found in the literature for online learning. Most of them are just incremental algorithms, originally designed to manage finite datasets. And direct adaptation of standard reduction algorithms to the online environment is not straightforward in most of cases because methods are originally designed to have in advance the complete dataset in memory. 
+Despite the importance of data reduction, not many proposals can be found in the literature for online learning. Most of them are just incremental algorithms, originally designed to manage finite datasets. On the other hand direct adaptation of static reduction techniques is not straightforward since most of techniques assumes the whole training set is available from the beginning. 
 
-Most of IS techniques, for instance, usually perform multiple passes over data and are based on time-consuming neighbor searches that makes them useless for incremental learning~\cite{garcia14}. On the contrary FS techniques are naturally incremental. Yet they suffers from other problems like feature drifting, concept evolution or streaming features~\cite{masud10}. Online discretization is another unsolved problem since evolving discretization schemes sharply affect the performance of predictive models. Adaptation of reduction techniques is thus a major concern that we aims at surveying in this work.
+Most of static instance selectors, for instance, demand to multiple passes over data, and are mainly based on time-consuming neighbor searches that makes them useless for incremental learning~\cite{garcia14}. On the contrary FS techniques are naturally incremental. Yet they suffers from other problems like feature drifting, concept evolution or streaming features~\cite{masud10}. Online discretization is another unsolved problem since evolving discretization schemes sharply affect the performance of predictive models. 
 
-[Description of survey/proposal]
+Adaptation of reduction techniques to the online environment is thus a major concern for the scientific community that we address in this work. The main objective of this work is to enumerate, classify, and analyze those contributions on online reduction already presented in the literature, and outline future challenges for new developments. Although there exist previous studies that have surveyed some tasks individually~\cite{bolon15, lu16}, this work aims at gathering all these studies in a compounded and more complete survey. Predictive, reduction and time performance for most relevant methods have been measured using a thorough experimental study, which includes nonparametric statistical tests to give support to the final conclusions. The experimental framework involves a total of 20 datasets and 9 reduction methods; three feature selectors, two discretizers, and four instance selectors.
 
-[Sections description]
+%Empirically, we convey experiments over the most relevant contributions in terms of predictive performance, reduction rate and time-usage. Precision results have been further analyzed by means of a nonparametric statistical study.
 
+The structure of this work is as follows. First of all we present related concepts such as: data streaming and concept drift (Section~\ref{sec:stream}), and data reduction (Section~\ref{sec:datared}). Then online reduction contributions are grouped by task, and described in Section~\ref{sec:redstream}. To assess performance and usefulness of methods, a thorough experimental framework is proposed in Section~\ref{sec:exp}, also grouped by task. Finally Section~\ref{sec:conclusions} gives some concluding remarks.
 
 \section{Data streaming and concept drift}
 \label{sec:stream}
@@ -235,9 +238,9 @@ Katakis' method~\cite{kata05} & Filter (IG, $\chi^2$, etc.) & no (Lossy-F) & no\
 EFS~\cite{carva06} & Wrapper (online classifier's weights) & no (Lossy-F) & no\\
 %FAE~\cite{wener06} & Filter ($\chi^2$) & Lossy-L\\
 DXMiner~\cite{masud10} & Filter (deviation weight) + unsupervised & yes (Lossless) & yes\\
-HEFT-Stream~\cite{nguyen12} & Filter (SU) & yes (all) & no\\
+HEFT-Stream~\cite{nguyen12} & Filter (SU) & no (Lossy-F) & no\\
 MReC-DFS~\cite{gomes14} & Filter (IG, $\chi^2$, etc.) & yes (all) & no\\
-OFS~\cite{wang14} & Wrapper (online classifier's weights) & yes (all) & no\\
+OFS~\cite{wang14} & Wrapper (online classifier's weights) & no (Lossy-F) & no\\
 \bottomrule
 \end{tabular}
 }
@@ -306,7 +309,7 @@ FISH~\cite{zlio11} & time-space distance & no & yes/yes\\
 \end{tabular}
 \end{table}
 
-Another relevant topic to be considered when electing instance selectors is whether enhancement and/or maintenance tasks are applied or not. Competence-based methods usually consists of two techniques, one for noise removal and another for redundancy. Redundancy is mainly ignored in accuracy-based techniques since most of them selects instances according to the number incorrect predictions committed by each one. Distance-based algorithms implicitly removes redundancy through the space factor in the distance formula.
+Another relevant topic to be considered when electing instance selectors is whether enhancement and/or maintenance tasks are applied or not. Competence-based methods usually consists of two techniques, one for noise removal and another for redundancy. Redundancy is mainly ignored in accuracy-based techniques since most of them select instances according to the number incorrect predictions committed by each one. Distance-based algorithms implicitly removes redundancy through the space factor in the distance formula.
 
 %
 %%Despite this, the PECS algorithm differs from IB3 in several ways: First, any new observation is immediately included in the case-base. Second, the PECS algorithm calculates a case's accuracy based only on its latest $l$ predictions. Third, rather than permanently deleting a case as noise, the PECS algorithm deactivates it and tracks its accuracy for reactivation purposes. Experiments show that the algorithm improves robustness over IB3 on time-varying tasks at the cost of increased storage requirements. However, PECS was originally designed to improve performance in concept drift problems, where noise along with incoming observations was not considered. As a result, all noisy observations are retained first and can only be removed with a deferment. PECS has also been criticized for its unlimited memory assumption~\cite{berin07}, by only disabling cases but not deleting them. 
@@ -369,7 +372,8 @@ Online ChiMerge~\cite{lehti12} &  statistical (merge) & yes\\
 
 %Ben-Haim et al.~\cite{ben10}, presented an incremental and online discretization for decision trees. Their algorithm is based on three methods: update: add a new example. It can be done by inserting the new example directly in an existing histogram or create a new bin with it and then do a merge; merge: join two bins into only one; uniform: use a trapezoid method to build the final Equal Frequency bins. This method has a low computational requirement and is incremental but it introduces some errors. In case of skewed distributions the authors recommend to use bound error algorithms.
 
-\section*{Experiments}
+\section{Experiments}
+\label{sec:exp}
 
 In this section we evaluate the usefulness and performance of the streaming preprocessing proposals presented before, from different perspectives:
 
@@ -469,7 +473,7 @@ Reduction techniques used in experiments are listed and grouped by task in Table
   CBE& --\\
   ICF& --\\
   FISH & learner = kNN, distance proportion (time/space) = 0.5, window size = 1\\
-  Learn++.NSE & learner = kNN, slope = 0.5, crossing point = 10, ensemble size = 15, pruning = no\\
+  %Learn++.NSE & learner = kNN, slope = 0.5, crossing point = 10, ensemble size = 15, pruning = no\\
   \hline
   \end{tabular}
   }
@@ -870,7 +874,7 @@ Apart from the deficiencies present in accuracy, Figure~\ref{fig:time-disc} depi
 
 Figure~\ref{fig:interv-disc} illustrates the reduction performed by each method, represented as number of intervals generated per method. In this case, PiD's inaccuracy is explained by the huge number of intervals generated by this method at the beginning (500 per feature), and during the splitting process --specially when the range specified is far from the real one--. Subsequent merging process launched by second layer is just not able to reduce so many intervals.
 
-As exposed before, evolving intervals sharply affects streaming classification as new intervals normally imply new patterns to be learned from the scratch. A trade-off between adaptation and exploitation needs to be made to allow discretization algorithms to be useful in streaming scenarios.
+As exposed before, evolving intervals sharply affects streaming classification since new schemes normally imply a new model needs to be learned from the scratch. A trade-off between adaptation and exploitation needs to be made to make discretization useful in streaming scenarios.
 
 
 %\begin{table*}[!t]
@@ -903,6 +907,24 @@ As exposed before, evolving intervals sharply affects streaming classification a
 
 \section{Concluding remarks}
 \label{sec:conclusions}
+
+In this work we have presented a thorough survey of data reduction methods. Basic concepts, existing work, and challenges addressed in data reduction have been analyzed in this work. Based on type of selection, generation and other relevant characteristics, we have made a simple but useful classification of methods. 
+
+Most relevant methods have also been analyzed empirically through a conscious experimental framework, which includes a long and diverse list of artificial and real datasets with different types of drift. An statistical analysis based on non-parametric tests have been conveyed to support the resulting conclusions. In general, they have served to confirm previous results on predictive results. 
+
+Some remarkable outcomes and guidelines can be inferred from the study, which we enumerate below:
+
+\begin{itemize}
+
+	\item A wide range of problems, range from concept-evolution to streaming features, need to be faced by FS solutions. Only DXMiner is however able to address all these problem through a combined strategy based on information-based selection and an unsupervised method.
+	\item As expected FS does not improve accuracy results presented by the option with the full set of features. Nevertheless FS solutions are able to yield simpler solutions with similar predictive performance. SU, the selector included in DXMiner, can be elected as the best method for FS because of its outstanding results in accuracy and its low complexity.
+	\item Competence-based methods for instance selection tend to maintain case-bases polished in the highest degree, free of noise and redundancy. However they bear a high complexity burden. Distance-based solutions are close in accuracy to competence-based methods but their burden is even greater.
+	\item CBE can be elected as best option for instance selection in terms of precision and reduction. NEFCSSRR also arouses as an interesting option, with similar results to CBE but with far better performance.
+	\item Few proposals related to online discretization exist in the literature nowadays. In fact no wrapper-based solution has been proposed yet for online problems, which may take advantage of the online classifiers already proposed in the literature.
+	\item Experiments show that no discretizer is better than NB trained on continuous features. It can be explained by the fact that evolving discretization schemes sharply affects the inductive process conducted by NB. This represents a new challenge for further proposals.	
+\end{itemize}
+
+Concluding this work, we can claim that online reduction is still in its early days. New and more sophisticated methods that deal with previous unsolved challenges need to be designed in next years. Great progress has been made in instance selection, but other tasks like discretization are far from being explored.
 
 \section*{Acknowlegments}
 
