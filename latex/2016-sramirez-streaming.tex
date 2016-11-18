@@ -53,13 +53,15 @@
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{subfig}
+\usepackage{color}
+\usepackage{colortbl}
 
 %% The lineno packages adds line numbers. Start line numbering with
 %% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
 %% for the whole article with \linenumbers.
 %% \usepackage{lineno}
 
-\journal{Knowledge Based Systems}
+\journal{Neurocomputing}
 
 \begin{document}
 
@@ -85,7 +87,7 @@
 %% \address{Address\fnref{label3}}
 %% \fntext[label3]{}
 
-\title{A Survey on Streaming Data Preprocessing}
+\title{An Overview on Data Reduction for Data Streaming}
 
 %% use optional labels to link authors explicitly to addresses:
 %% \author[label1,label2]{}
@@ -97,6 +99,9 @@
 
 \author[ugr]{S. Garc\'ia}
 \ead{salvagl@decsai.ugr.es}
+
+\author[pwr]{B. Krawczyk}
+\ead{bartosz.krawczyk@pwr.edu.pl}
 
 \author[pwr]{M. Wo\'zniak}
 \ead{michal.wozniak@pwr.edu.pl}
@@ -113,6 +118,8 @@
 \begin{abstract}
 %% Text of abstract
 
+Data reduction has become an essential preprocessing technique in current knowledge discovery scenarios, mainly dominated by increasingly larger datasets. Data reduction techniques aims at reducing the complexity inherent to real-world datasets so that they can be easily processed by current mining solutions. It is well-known that data reduction offers many advantages, among others, a faster and more precise learning process, and a more understandable structure for raw data. Literature about reduction on static data is quite rich. On the contrary, reduction on data streams still looks undeveloped, despite online learning is growing in importance thanks to the development of Internet, and technologies for data collection. Throughout this overview, we summarize, categorize and analyze those contributions on data reduction that cope with streaming data. This overview also takes into account the existing relationships between the different families of methods (feature and instance selection, and discretization). Empirically, we convey experiments over the most relevant contributions in terms of predictive performance, reduction rate and time-usage. Precision results have been further analyzed by means of a nonparametric statistical study. Some general advises about algorithms, as well as the future challenges to be faced in next years are also highlighted in this manuscript.
+
 \end{abstract}
 
 \begin{keyword}
@@ -123,7 +130,7 @@
 %% MSC codes here, in the form: \MSC code \sep code
 %% or \MSC[2008] code \sep code (2000 is the default)
 
-machine learning \sep data streams \sep data preprocessing
+machine learning \sep data streams \sep classification \sep data preprocessing \sep data reduction 
 
 \end{keyword}
 
@@ -136,63 +143,115 @@ machine learning \sep data streams \sep data preprocessing
 \label{sec:intro}
 
 
+Data preprocessing~\cite{garcia14, garcia16b} is one of the major step within the knowledge discovery process. Despite being less known that other steps like data mining, data preprocessing usually involves more effort and time within the discovery process ($> 50\%$ of total effort)~\cite{pyle99}. Raw data usually comes with imperfections such as inconsistencies, missing values, noise and/or redundancy. Performance of subsequent learning will thus be undermined if the process is fed with low-quality data. Thus low-quality data usually imply low-quality decisions.
+
+Data preparation, as part of preprocessing~\cite{garcia14}, is aimed at transforming raw data into high-quality data that properly fits the subsequent mining process. Preparation is considered as a mandatory step, and it includes techniques such as integration, normalization, cleaning and transformation.
+
+In recent times, the amount of data generated is growing exponentially following the wave of Big Data~\cite{mayer13, garcia16}. Data grow in three dimensions --features, examples and cardinality--, demanding to a simplification in data complexity that allows its direct processing by standard algorithms. Data reduction techniques perform this simplification by selecting and deleting redundant and noisy features and/or instances, or by discretizing complex continuous spaces. Resulting data maintain the original structure and meaning of the input data, but with a more manageable size. Although optional in data preprocessing, data reduction becomes essential when complexity limits are surpassed in standard algorithms. Faster learning, improved generalization capability, and better understandability of data, are among the many benefits of data reduction. 
+%Data reduction is compounded by several families of techniques, such as feature selection (removes columns), instance selection (removes rows), and discretization (transforms continuous inputs into intervals).
+
+In many cases input data are not available in advance but arrive in form of continuous examples or agglutinating batches, called data streams~\cite{gama10}. Streams demand to a constant and sometimes never-ending learning process (known as online learning) that incrementally model underlying concepts. Sometimes these concepts shift their boundaries or change completely, thus forcing the learning process to adapt to these changes~\cite{gama14}.
+
+Despite the importance of data reduction, not many reduction proposals can be found in the literature for online learning, specially supervised solution. Most of methods are just incremental algorithms, originally designed to manage finite datasets. Direct adaptation of static reduction techniques is not straightforward since most of techniques assumes the whole training set is available from the beginning:
+ 
+\begin{itemize}
+	\item Most of static instance selectors, for example, demand to multiple passes over data, and are mainly based on time-consuming neighbor searches that makes them useless for incremental learning~\cite{garcia14}. 
+	\item On the contrary, feature selection techniques are naturally incremental. Yet they suffers from other problems like feature drifting, concept evolution or streaming features~\cite{masud10}.
+	\item Online supervised discretization also remains unsolved. Most of standard solutions requires several trials of sharp adjustments before obtaining an operating solution~\cite{webb14}.
+\end{itemize}
+
+Adaptation of reduction techniques to the online environment is thus a major concern for practitioners and scientists. The main objective here is to enumerate, classify, and analyze those contributions on online reduction already presented in the literature, and outline future challenges for new developments in this topic. Although there exist previous studies that have performed a coarse-grained analysis on some tasks individually (e.g.: feature selection or instance selection)~\cite{bolon15, lu16}, this work aims at gathering all these studies in a combined and deeper overview. 
+
+Predictive, reduction and time performance for most relevant methods have been measured using a thorough experimental study, which includes nonparametric statistical tests to give support to the final conclusions. The experimental framework involves a total of 20 datasets and 9 reduction methods; three feature selectors, two discretizers, and four instance selectors.
+
+%Empirically, we convey experiments over the most relevant contributions in terms of predictive performance, reduction rate and time-usage. Precision results have been further analyzed by means of a nonparametric statistical study.
+
+The structure of this work is as follows. First of all we present related concepts such as: data streaming and concept drift (Section~\ref{sec:stream}), and data reduction (Section~\ref{sec:datared}). Then online reduction contributions are grouped by task, and described in Section~\ref{sec:redstream}. To assess performance and usefulness of methods, a thorough experimental framework is proposed in Section~\ref{sec:exp}, also grouped by task. Finally Section~\ref{sec:conclusions} gives some concluding remarks.
 
 \section{Data streaming and concept drift}
+\label{sec:stream}
 
+\section{Data reduction}
+\label{sec:datared}
+%In data preprocessing, despite not being mandatory its application~\cite{garcia14}. This phase aims at reducing/simplifying raw data, whilst maintaining its original structure and quality, sometimes with unexpected improvements. Although optional in theory, reduction becomes essential when size of data exceeds the performance capabilities of standard mining algorithms. Sometimes, no reduction implies the execution of a given algorithm is impractical or even unfeasible. 
 
-\section{Feature selection for data streaming}
-\label{sec:fs}
+As mentioned before data preprocessing is one of the key phases in knowledge discovery~\cite{garcia16b}. Data reduction, as part of preprocessing, simplifies input data whilst maintaining its original structure and quality; sometimes with improvements in predictive performance. Depending on where reduction is performed, a different family of techniques is used:
 
-Many feature selection algorithms that deal with streaming data have been proposed in the literature, most of them are naturally incremental methods but others can process streams in online way. Firstly, we would like to distinguish between the two types of online feature selection methods in the literature. Some feature selection methods consider that feature arrive one by one while feature vectors (examples) are always available~\citep{wu10, eskandari16}. In constrast, other online methods assume that are the instances which arrive sequentially and the feature set can change or not. The last approach is more natural in real-world problems so we will focus on this topic. 
+\begin{itemize}
+	\item \textbf{Dimensionality reduction}: Feature Selection (FS) or Feature Extraction. FS~\cite{doquire12} eliminates irrelevant or redundant features/columns, whereas Feature Extraction generates a simpler feature space through some transformations in the original space of features. The aim here is to yield a minimum set of features so that the subsequent distribution probability of classes remains as unchanged as possible. As FS maintains the original features, it is more convenient for model interpretation. Depending on the relationship between the selector and the predictive algorithms, we can classify FS algorithms into three categories: filters, which acts before the learning process and with independence to it; wrappers, which uses the inductive algorithm to evaluate subgroups of features; and embedded, where the search is part of the learning process. Wrappers methods tend to be more accurate than filters, but more complex. Embedded methods are less costly than wrappers, but more dependent.
+	\item \textbf{Instance reduction}: Instance Selection (IS) or instance generation~\cite{lopez14}. IS is aimed at intelligently selecting those instances more representatives. Instance generation methods can also generate new instances to fill gaps in concept definitions. IS differs from data sampling in that the former categorizes instances depending on the problem, whereas sampling is more stochastic. Based upon the kind of search implemented by the IS algorithms, they can be classified into three categories: condensation, which remove redundant points far from the borders; edition, which removes noisy points close to the boundaries; or hybrid, which combines both noise and redundancy removal.
+	\item \textbf{Feature space simplification}: normalization, discretization, etc. Discretization~\cite{ferreira14} summarizes a set of continuous values into a finite set of discrete intervals. The result is a set of nominal features that can be used by any mining process. Although most of mining algorithms work with continuous data, many of them can only cope with nominal features, specially those based on statistical and information measures (e.g.: Na\"ive Bayes (NB))~\cite{yang09}. Others algorithms, like tree-based classifiers~\cite{hu09}, generate more accurate and compact results when using discrete values. Good discretizers try to achieve the best predictive performance derived from discrete data, while reducing the number intervals as much as possible. Based upon how intervals are generated by discretizers, they are grouped into: splitting methods, which split the most promising interval in each iteration into two partitions; and merging methods, which merge the best two adjacent intervals in each trial.
+\end{itemize}
 
-In streaming learning, the feature space can also be affected by the changing environment. \textbf{Feature drifts} occur whenever the relevance of a given attribute $A_i$ changes over time when new instances arrive at the system~\cite{barddal15}. Let $rel(A_i, t_i)$ be the relevance function that determines the importance of $A_i$ in $t_i$ time of the stream. There exits a feature drift iff the relevance of feature $A_i$ changes between $t_j$ and $t_k$ timestamps.
+\section{Data reduction on data streams}
+\label{sec:redstream}
+
+In streaming scenarios reduction techniques are demanded to preferably process elements one-by-one (or by batches), as quick as possible, and without making any assumptions about data distribution in advance. In the next sections we describe those reduction proposals that address the streaming problem. These proposals are grouped by family/task: dimensionality reduction (Section~\ref{subsec:fsel}), instance reduction (Section~\ref{subsec:isel}), and feature space simplification (Section~\ref{subsec:disc}).
+%A faster learning, and a better understandability and improved generalization process, are among the many advantages of data reduction. Despite all these benefits, not many proposals can be found in the literature~\cite{garcia14} that cope with online problems. Most of them are just incremental algorithms, originally designed to manage finite datasets.
+
+%Direct adaptation of standard reduction algorithms to the online environment is not possible in most of cases because they are originally designed to have the complete dataset in advance. Most of IS techniques (Section~\ref{subsec:isel}), for instance, usually perform multiple passes over data and are based on time-consuming neighbor searches that makes them useless for incremental learning. On the contrary FS techniques are naturally incremental (Section~\ref{subsec:dimred}). Yet they suffers from other problems like feature drifting, concept evolution or streaming features. Online discretization is another unsolved problem in streaming environments since evolving discretization schemes sharply affect predictive models. Adaptation of reduction techniques is thus a major concern that we aims at addressing in this work.
+
+\subsection{Dimensionality reduction}
+\label{subsec:fsel}
+
+Many FS algorithms for data streams have been proposed in the literature. Most of them are naturally incremental algorithms designed for offline processing, whereas others are specifically thought to cope with flowing streams~\cite{bolon15}. 
+
+Further distinction can be also made between online methods, depending on what kind of elements arrives within streams. Some FS methods suppose that features arrive one-by-one --\textbf{streaming features}-- while feature vectors are initially available~\citep{wu10, eskandari16}, whereas others assume that the instances always arrive sequentially and the feature set may change or not~\cite{kata05} --\textbf{online FS}--. New classes can also emerge from streams without previous knowledge --\textbf{concept evolution}--, requiring a complete redefinition of the model.
+
+In streaming learning, feature space can also be affected by the changes in data distribution. \textbf{Feature drifts} occur whenever the relevance of a given attribute $A_i$ changes over time when new instances arrive to the system~\cite{barddal15}. Let $rel(A_i, t_i)$ be the relevance function that determines the importance of $A_i$ in $t_i$ time of the stream. There exits a feature drift iff $rel(A_i)$ changes between $t_j$ and $t_k$ timestamps.
 
 \begin{equation}\label{eq:rel}
 \exists t_j, \exists t_k, t_j < t_k, rel(A_i, t_j) \neq rel(A_i, t_k)
 \end{equation}
 
-As in other concept drifts, changes in relevance enforce algorithms to discard or adapt the model already learned by removing the the most irrelevant features in the new scenario, as well as including the most relevant ones (dynamic feature selection)~\cite{nguyen12}. As changes in relevance directly affects the decision boundaries, feature dritf can be seen as a specific type of real concept drift which is independent of fluctuations in the data distribution $P[x]$. 
+As in other concept drifts, changes in relevance enforce algorithms to discard or adapt the model already learned by removing the most irrelevant features in the new scenario~\cite{nguyen12}, as well as including the most relevant ones --\textbf{dynamic FS}--. As changes in relevance directly affects the decision boundaries, feature drift can be seen as a specific type of real concept drift, which is independent of fluctuations in the data distribution $P[x]$. Normal concept drifts differs from feature drifts in that normal drifts might not affect attributes relevances but only prior probabilities $P[x|y]$.
 
-As the set of selected features evolves over time, it is likely that the feature space in test instances be distinct from the currenct selection. Therefore, when a new instance is classified, we need to perform a conversion between feature spaces for homogeneization purposes~\cite{masud10}. The type of conversion to consider are the followings: 
+As the set of selected features evolves over time, it is likely that the feature space in test instances is distinct from the current selection. Therefore when a new instance is classified, we need to perform a conversion between feature spaces for homogenization purposes~\cite{masud10}. The type of conversion to consider are the followings: 
 \begin{itemize}
-	\item Lossy Fixed (Lossy-F): the same feature set is used for the whole stream. It is generated from the first batch. All the following instanes (training and test) will be mapped to this instance, resulting in a clear loss in future importance.
-	\item Lossy Local (Lossy-L): a new feature space is considered for each new training batch. Test instances are thus mapped to the traininig space in each iteration. This conversion is also troublesome because important features in test are skipped.
-	\item Lossless Homogenizing (Lossless): Lossless is similar to the previous case, except that here the feature space in the test set is also considered in the conversion. There is thus a homogeneization between spaces, for example, by unifying both spaces and padding with zeros any feature not present in the other set. This conversion is the best alternative as it considers all spaces and times.
+	\item Lossy Fixed (Lossy-F): the same feature set is used for the whole stream. It is generated from the first batch. All the following instances (training and test) will be mapped to this set, resulting in a clear loss in future importance.
+	\item Lossy Local (Lossy-L): a different feature space is used for each new training batch. Test instances are thus mapped to the training space in each iteration. This conversion is also troublesome because relevant features in test may be omitted.
+	\item Lossless Homogenizing (Lossless): Lossless is similar to the previous conversion, except that the feature space in the test set is considered here. There exist a homogenization between spaces, for example, by unifying both spaces and padding with zeros any missing feature in the other set. This conversion deems both space and time, so it can be seen as the best option.
 \end{itemize}
 
-In the followings, we enumerate those algorithms that address the streaming feature selection problem. Table~\ref{tab:fs} details the type of selection method and space conversion performed by each algorithm.
+In this paper we will focus on \textbf{online} techniques that allow the arrival of new instances and features at the same time, because they represent a more natural scenario in real-world problems. In the following, we present a list formed by the most relevant algorithms on this topic:
 
 \begin{itemize}
-	\item Katakis et al.~\cite{kata05} was among the first to introduce the problem of a dynamic feature space over time in data streams. They proposed a technique that involves a feature ranking (filter) method to select relevant features. As the imporance score of each feature can be measured using many cumulative functions like information gain, $\chi^2$ or mutual information; it is a versatile solution to rank features.
-	\item Carvalho et al.~\cite{carva06} proposed Extremal Feature Selection (EFS), an online feature selection method that uses the weights computed by the online classifier (Modified Balance Winnow) to measure the relevance of features. This importance is computed as the absolut difference between the positive and negative weights for each feature.
-	\item Wenerstrom and Giraud-Carrier~\cite{wener06} proposed a dynamically-sized ensemble algorithm (called FAE) composed of learners with different feature space sets. Learners are created when the top features changes over a threshold or when the ensemble's performance degrades enough. This method is also based on a feature ranking method that cumulates $\chi^2$-based scores. FAE performs a Lossy-L conversion between spaces. According to the author's experiments, FAE performs better than the Katakis's approach. %Lossy-L conversion
-	\item Masud et al.~\cite{masud10} proposed a data stream classification technique (DXMiner), which uses the deviation weight measure to deal with the feature ranking and selection problem in a single-pass fashion. Furthermore, DXMiner naturally address the problem of novel classes (concept-evolution) by building a decision boundary around the training data. In contrast to previous methods, DXMiner uses lossless conversion that exploits all the available features which is useful to detect novel classes. To select features in the test feature space set, DXMiner uses a unsupervised technique (e.g., the highest frequency).
-	\item Nguyen et al.~\cite{nguyen12} use an ensemble technique based on windowing to detect feature drifts. The algorithm is based on a ensemble of classifiers, where each classifier has its own feature set. If a drift is detected, the ensemble is updated with a new classifier together with a new feature subset; otherwise, each classifier is updated accordingly. Fast Correlation-Based Filter (FCBF) is the feature selection method used in this method. FCBF heuristically applies a backward selection technique with a sequential search strategy to remove irrelevant and redundant features.
-	\item In~\cite{gomes14}, the authors propose an algorithm to mine recurring concepts (called MReC-DFS). Here, the same online selector method proposed in~\cite{kata05} is used. Instead of selecting a fixed number of features, they propose to use either a fixed threshold or a adaptative one based on percentiles. They also compare the effects of using different space conversions~\cite{masud10} (like Lossy-F, Lossy-L or Lossless).
-	\item Wang et al.~\cite{wang14} proposed an $\varepsilon$-greedy online feature selection method (called OFS) based on a classical technique that makes a trade-off between exploration and exploitation of features. The algorithm spends $\varepsilon$ trials on exploration by randomly choosing $N$ attributes from the whole set of attributes, and the remaining 1-$\varepsilon$ of trials on exploitation by choosing the $N$ attributes for which the linear classifier has nonzero values. %This selection method also presents a lossy adaptation since the feature space of the test test is not considered in the selection process.
-In this work, the concept of feature drift is not addressed explicitly, and there is no comparison with previous works in this topic.
+	\item Katakis et al.~\cite{kata05} was among the first to introduce the problem of dynamic feature space over time in data streams. They proposed a technique that includes a feature ranking (filter) method to select relevant features. As the importance score of each feature can be measured using many cumulative functions like Information Gain (IG), $\chi^2$ or mutual information; it is a versatile and direct solution for online feature ranking.
+	\item Carvalho et al.~\cite{carva06} proposed Extremal Feature Selection (EFS), an online FS method that uses the weights computed by an online classifier (Modified Balance Winnow) to measure the relevance of features. The score is computed as the absolute difference between the positive and negative weights for each feature.
+	%\item Wenerstrom and Giraud-Carrier~\cite{wener06} proposed a dynamically-sized ensemble algorithm (called FAE) composed of learners with different feature space sets. Learners are created when the top features changes over a threshold or when the ensemble's performance degrades too much. FAE is also based on a feature ranking method that cumulates $\chi^2$-based scores. FAE performs a Lossy-L conversion between spaces. %According to the author's experiments, FAE performs better than the Katakis's approach. %Lossy-L conversion
+	\item Masud et al.~\cite{masud10} proposed a streaming classification technique (DXMiner), which uses the deviation weight measure to rank features in the predictive phase. Furthermore, DXMiner naturally address the problem of novel classes (concept-evolution) by building a decision boundary around the training data. In contrast to previous methods, DXMiner uses lossless conversion, which is useful to detect novel classes. To rank features in the test space, DXMiner uses a unsupervised technique (e.g., the highest frequency in the batch) that selects those feature more representative for future predictions. Note that unsupervised selection requires batching to compute such statistics.
+	\item Nguyen et al.~\cite{nguyen12} designed an ensemble technique based on windowing to detect feature drifts. The algorithm is based on a ensemble of classifiers, where each classifier has its own feature set. If a drift is detected, the ensemble is updated with a new classifier together with a new feature subset; otherwise, each classifier is updated accordingly. Fast Correlation-Based Filter (FCBF) is the FS method used in this method, which is based on Symmetrical Uncertainty (SU). FCBF heuristically applies a backward technique with a sequential search strategy to remove irrelevant and redundant features.
+	\item In~\cite{gomes14}, the authors propose an algorithm to mine recurring concepts (called MReC-DFS). Here, the authors adopt the same selection solution proposed in~\cite{kata05}. Instead of selecting a fixed number of features, they propose to use either a fixed threshold or an adaptive one based on percentiles. They also compare the effects of using different space conversions~\cite{masud10} (like Lossy-F, Lossy-L or Lossless).
+	\item Wang et al.~\cite{wang14} proposed a greedy online FS method (called OFS) based on a classical technique that makes a trade-off between exploration and exploitation of features. The algorithm spends $\varepsilon$ iterations on exploration by randomly choosing $N$ attributes from the whole set of attributes, and the remaining steps on exploitation by choosing the $N$ attributes for which the linear classifier has nonzero values. %This selection method also presents a lossy adaptation since the feature space of the test test is not considered in the selection process.
+In this work, no feature drift is addressed explicitly, and no comparison with previous works is performed.
 \end{itemize}
+
+Table~\ref{tab:fs} details the type of selection and space conversion performed by each algorithm. Two remarkable selection strategies emerges from this summary: one based on information filtering and another based on the use of classifier weights (wrapper). 
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
 \centering
 \scriptsize
-\caption{Summary descripion of streaming feature selection methods. Information about the type of selector (wrapper or filter) and space conversion used is included.}
+\caption{Summary description of streaming FS methods. Information about the type of selector (wrapper or filter), the feature conversion accomplished (if appropriate), and whether concept-evolution appears, is presented below.}
 \label{tab:fs}
-\begin{tabular}{ lcc }
+\resizebox{1.\textwidth}{!}{
+\begin{tabular}{ lcccc }
 \toprule
-{\bf Method} & {\bf Type of selector} & {\bf Space conversion}\\
+{\bf Method} & {\bf Selection type (measure)} & {\bf Streaming features (conversion)} & {\bf Concept-Evolution}\\
 \midrule
-Katakis's method~\cite{kata05} & Filter ($\chi^2$) & Lossy-L\\
-EFS~\cite{carva06} & Wrapper (classifier's weights) & Lossy-L\\
-FAE~\cite{wener06} & Filter ($\chi^2$) & Lossy-L\\
-DXMiner~\cite{masud10} & Wrapper (deviation weight + unsupervised) & Lossless\\
-HEFT-Stream~\cite{nguyen12} & Filter (FCBF) & Lossy-F, Lossy-L, Lossless\\
-MReC-DFS~\cite{gomes14} & Filter ($\chi^2$) & all\\
-OFS~\cite{wang14} & Wrapper (classifier's weights) & Lossy-L\\
+Katakis' method~\cite{kata05} & Filter (IG, $\chi^2$, etc.) & no (Lossy-F) & no\\ 
+EFS~\cite{carva06} & Wrapper (online classifier's weights) & no (Lossy-F) & no\\
+%FAE~\cite{wener06} & Filter ($\chi^2$) & Lossy-L\\
+DXMiner~\cite{masud10} & Filter (deviation weight) + unsupervised & yes (Lossless) & yes\\
+HEFT-Stream~\cite{nguyen12} & Filter (SU) & no (Lossy-F) & no\\
+MReC-DFS~\cite{gomes14} & Filter (IG, $\chi^2$, etc.) & yes (all) & no\\
+OFS~\cite{wang14} & Wrapper (online classifier's weights) & no (Lossy-F) & no\\
 \bottomrule
 \end{tabular}
+}
 \end{table}
+
+Besides FS, dimensionality reduction can be accomplished through an artificial mapping between the original space of features and a new space of fewer dimensions. Feature extraction techniques, although less popular than FS ones, have shown their ability in many predictive problems. One of the most important contributions here is Principal Component Analysis (PCA)~\cite{jolliffe86}. In~\cite{nie16}, two online gradient-based versions of PCA are studied in depth. The aim of previous work is to obtain an online model with the lowest difference in cumulative losses with respect to the best offline alternative. Although optimal, online PCA is not able to update projections in less than $O(n^3)$ per iteration~\cite{hazan10}. Thus more efficient techniques needs to be developed in the future if we want a real streaming solution in feature extraction.
 
 
 %  \begin{tabular}{lcc}
@@ -208,49 +267,59 @@ OFS~\cite{wang14} & Wrapper (classifier's weights) & Lossy-L\\
 %	\bottomrule
 %  \end{tabular}
 
-%Finally, in~\cite{shar06}, the authors presented an algorithm for efficiently performing threshold function queries to manage \textbf{distributed data streams}. This function queries are typically used for feature selection. The algorithms are based on a geometric analysis of the problem. Upon initialization, the algorithm collects frequency counts from all the streams, and calculate the initial result of the query. In addition, a numerical constraint on the data received on each individual stream is defined. As data arrives on the streams, each node verifies that the constraint on its stream has not been violated. The geometric analysis of the problem guarantees that as long as the constraints on all the streams are upheld, the result of the query remains unchanged, and thus no communication is required. If a constraint on one of the streams is violated, new data is gathered from the streams, the query is reevaluated, and new constraints are set on the streams. 
+%Finally, in~\cite{shar06}, the authors presented an algorithm for efficiently performing threshold function queries to manage \textbf{distributed data streams}. This function queries are typically used for FS. The algorithms are based on a geometric analysis of the problem. Upon initialization, the algorithm collects frequency counts from all the streams, and calculate the initial result of the query. In addition, a numerical constraint on the data received on each individual stream is defined. As data arrives on the streams, each node verifies that the constraint on its stream has not been violated. The geometric analysis of the problem guarantees that as long as the constraints on all the streams are upheld, the result of the query remains unchanged, and thus no communication is required. If a constraint on one of the streams is violated, new data is gathered from the streams, the query is reevaluated, and new constraints are set on the streams. 
 
-\section{Instance selection for data streaming}
+\subsection{Instance reduction}
+\label{subsec:isel}
 
-Lazy learning algorithms have been broadly used to address several problems in machine learning. However, case-bases naturally deteriorate and grow with usage over time, also affecting data distribution and decision boundaries underlying data (concept drift).
+Lazy learning has been broadly used in predictive analytics~\cite{cover67}. Yet case-bases naturally deteriorate and grow with usage over time, which affects data distribution and the decision boundaries underlying data.
 
-In this scenario, past preserved cases that belong to a previous concept may degrade the performance of the learner if a new concept appears. Likewise, new instances that represents a new concept may be classified as noise and removed by the edition mechanism, because they disagree with past concepts. 
+In this scenario, past preserved cases that belong to a previous concept may degrade the performance of the learner if a new concept appears. Likewise new examples that represents a new concept may be classified as noise and removed by a misbehavior of the IS mechanism, because they disagree with past concepts~\cite{lu16}. 
 
-Some enhancement and maintenance should be thus performed on case-bases through the usage of shopisticated instance selection algorithms. Nevertheless, most of these techniques assume stationariaty of data and ignore the concept drift phenomenon. Next, we enumerate those instance selection techniques that explicitily address concept drift when selecting instances:
+Some enhancement (\textbf{edition}) and maintenance (\textbf{condensation})~\cite{garcia14} should be thus performed on case-bases in form of sophisticated IS processes, which select those cases that best represent the current concept. Edition techniques are focused on noise removal on borders, whereas condensation techniques on redundancy removal. Nevertheless most of current techniques assume stationarity and ignore the concept drift phenomenon. Firstly, we present a subset of IS techniques that incrementally or in a batch way selects instances from a case-base~\cite{garcia12}:
 
 \begin{itemize}
-	\item Instance-Based learning Algorithm 3 (IB3)~\cite{aha91} is one of the first attempts to deal with concept drift. It is based on accuracy and retrieval frequency measures (per instance). By means of a confidence interval test, IB3 decides if a case should be added to the case-base or it needs to wait until its insertion be appropiate. 
-The removal of a case is performed if its accuracy is below (in a degree) its class's frequency. Due to IB3 defers the inclusion of examples, it is only suitable for gradual concept drift. 
-	\item The Locally Weighted Forgetting (LWF) algorithm~\cite{salga93} is an instance weighting technique based on k-nearest neighbors (k-NN). In LWF, those cases with a weight below a threshold are removed. This method has shown a good performance for both gradual and sudden concept drift. LWF algorithm has been criticized by its lower asymptotic classification in static enviroments and by its weighting scheme typically causes over-fitting~\cite{klinken04}.
-	\item Salganicoff~\cite{salga97} designed the Prediction Error Context Switching (PECS) algorithm, which is designed to work in both dynamic and static environments. PECS algorithm is based on the case's accuracy measure used in IB3 and adopts the same confidence test. In order to introduce the time factor in the selection decisions, PECS only consider the latest predictions to compute accuracy. Furthermore, PECS inmediately add new cases to the base to expedite the slow adaptation process. Finally, PECS disables cases instead of permanently deleting them in order to include them again if their accuracy get high. It is argued in~\cite{berin07} that the main drawbacks of PECS are its high memory usage and its slow removal process (new instances are retained first).
-	\item Delany et al.~\cite{delany05} proposed an drift control mechanism with two levels. The method in the fist level is an hybrid of two competence-based editing methods\footnote{Basic concepts about competence models can be reviewed in~\cite{smyth95}}: Blame Based Noise Removal (BBNR) and Conservative Redundancy Reduction (CRR). BBNR is aimed at deleting those cases whose removal do not imply coverage loss, whereas CRR selects those cases with the smallest coverage and that are missclassified. Note that both methods are designed for static problems, which can cause some problems like the removal of novel concepts when gradual drift appears, and the inability of removing small groups of cases where examples covers each other but missclassifies all the surrounding neighbors. Furthermore, BBNR do not keep the competence model up-to-date, which can cause many problems in the evaluation phase. Finally, in the second level, the algorithm periodically reselected features to completely rebuild a CBR system.
-	\item Instance-Based Learning on Data Streams (IBL-DS)~\cite{berin07} algorithm is presented as the first solution that considers both time and space factars to controls the shape and size of the case-base. The main rule in IBL-DS is as follows: every neighbor in a test range is removed if the new case's class dominates in this group. IBL-DS also introduces the usage of an explicit drift detection method developed by Gama~\cite{gama04}, which determines when removing a fixed number of instances considering space and time factors. The number of cases to remove is computed considering the minimum error rate and the error of the newest classification stages. On the other hand, IBL-DS controls the size of the case-base by removing the oldest instances. However, the time-based removal strategy implemented by IBL-DS has been criticized because some old but relevant instances can be eliminated.
-	\item FISH algorithms~\cite{zlio11} are also based on a linear combination of time and space distances. The idea behind these algorithms is to dynamically select a set of relevant examples for training each model in the ensemble. Three variants of FISH are included in the original work. In FISH1, the training size is fixed at the beginning. FISH2 selects the best training size according to the accuracy (through leave-one-out cross validation). FISH3 also weights time and space factors by using a different loop of cross validation.	
-	\item Lu et al.~\cite{lu16} propose a case-base editing technique based on competence preservation and enhancement~\cite{smyth95}. Their solution consists of three stages: the first one compares the distribution between two windows in order to dectect if there is a drift or not. Apart from detecting the drift, this method also limit the area where the distribution changes most. Afterwards, the Noise-Enhanced Fast Context Switch (NEFCS) method is applied. NEFCS examine all new cases and determine whether they are noise (enhancement). However, only the noisy cases that lie outside the detected competence areas are removed, as they may be part of a novel concept. Finally, Stepwise Redundancy Removal (SRR) method is aimed at controlling the size of the case-base (preservation). SRR removes redundant examples recursively until case-base coverage gets deteriorated.
+	\item Instance-Based learning Algorithm 3 (IB3)~\cite{aha91} is one of the first attempts to deal with concept drift. It is based on accuracy and retrieval frequency measures. By means of a confidence interval test, IB3 decides whether a case should be added to the case-base or it needs to wait until its insertion is marked as appropriate. Removal of cases is performed whenever the accuracy of a case is below (in a certain degree) its class frequency. Due to IB3 defers the inclusion of examples, it is only suitable for gradual concept drift. 
+	\item The Locally Weighted Forgetting (LWF) algorithm~\cite{salga93} is an instance weighting technique based on k-nearest neighbors (kNN). In LWF, those cases with a weight below a threshold are removed. LWF algorithm has been criticized by its lower asymptotic classification in static environments and by its tendency to over-fitting~\cite{klinken04}. This method has shown good performance for both gradual and sudden concept drift. 
+	\item Salganicoff~\cite{salga97} designed the Prediction Error Context Switching (PECS) algorithm, which is designed to work in both dynamic and static environments. PECS algorithm is based on the same accuracy test designed by IB3, also adopting the same confidence test. In order to introduce time dimension in its decisions, PECS only consider the newest predictions in its computations. Furthermore PECS immediately add new cases to the base to expedite the slow adaptation process. PECS disables cases instead of permanently deleting them. Those cases can be re-introduced if their accuracy ascends again. It is argued in~\cite{berin07} that PECS holds high memory requirements and a slow removal process --new instances are retained right after they arrive--.
+	\item Iterative Case Filtering Algorithm (ICF)~\cite{brighton02} is a redundancy removal technique that removes those cases with a coverage set size smaller than its reachability set. Authors included Repeated Edited-NN~\cite{tomek76} to remove the noise around the borders.
+\end{itemize}
+
+Although there exist more complex proposals in the literature~\cite{garcia12}, the previous list includes those methods that have served as a keystone for further developments in IS for concept drift~\cite{lu16}. The next list deal with those techniques that explicitly address concept drift:
+
+\begin{itemize}
+	\item Delany et al.~\cite{delany05} proposed a drift control mechanism with two levels, called Competence-Based Editing (CBE). In the first level, an hybrid of two competence-based editing methods\footnote{Basic concepts about competence models can be reviewed in~\cite{smyth95}}: Blame Based Noise Removal (BBNR) and Conservative Redundancy Reduction (CRR), is launched. BBNR is aimed at deleting those cases whose removal do not imply coverage loss, whereas CRR selects misclassified cases with the smallest coverage. Note that both methods are designed for static problems, which can cause some problems like the removal of novel concepts when gradual drift appears, or the ``forgetting" of small groups of cases where examples covers each other but misclassifies all the surrounding neighbors. BBNR do not keep the competence model up-to-date, it only rebuild the model in the second level. An outdated competence model may yield inconsistencies in the evaluation phase as the model does not accurately reflect the current concept.
+	\item Instance-Based Learning on Data Streams (IBL-DS)~\cite{berin07} algorithm is presented as the first solution that deems both time and space factors to control the shape and size of the case-base. In IBL-DS, every neighbor in a test range is removed if the new case's class dominates in this range. IBL-DS also introduces an explicit drift detection method developed by Gama~\cite{gama04}, which determines when removing a fixed number of instances considering space and time. Number of removals is computed considering the minimum error rate and the aggregated error of last predictions. IBL-DS controls the size of the case-base by removing the oldest instances. However the time-based removal strategy implemented by IBL-DS has been criticized because some old but relevant instances may be eliminated in this process.
+	\item FISH algorithms~\cite{zlio11} are also based on a combination of time and space, in this case, computed as distances. The idea behind these algorithms is to dynamically select the most relevant examples, which will serve as training for next model. Three different versions of FISH were proposed. In FISH1, the training size is fixed at the start. FISH2 selects the best training size according to the accuracy (through leave-one-out cross validation). FISH3 also weights time and space by using a different loop of cross validation. FISH2 is considered as the leader of the family. FISH represents a time-consuming option since it stores all seen examples in order to compute space/time distances.
+	\item Lu et al.~\cite{lu16} propose a case-base editing technique based on competence preservation and enhancement~\cite{smyth95}. Their solution consists of three stages: the first one compares the distribution between two windows in order to detect if there is a drift or not. Apart from detecting the drift, this method also limits the area where the distribution changes most. After that the Noise-Enhanced Fast Context Switch (NEFCS) method is applied. NEFCS examines all new cases and determines whether there is noise or not (enhancement). However only the noisy cases that lie outside the detected competence areas are removed, because they may be part of novel concepts. Stepwise Redundancy Removal (SRR) method is aimed at controlling the size of the case-base (preservation). SRR removes redundant examples recursively until the case-base's coverage starts to deteriorate.
 
 \end{itemize}
 
+Table~\ref{tab:instance} lists the most relevant instance selectors for drifting streams. We can draw three major types of selection from this table: competence-based, weighting-based, and accuracy-based. Competence-based methods (like CBE or ICF) tend to be more accurate, but time-consuming because they require a constant update of the competence model. Distance-based selection strategies can require even more time than competence-based models when the number of distances and/or the features involved are high. Accuracy-based methods are shown not to respond well to sudden drifts because changes in accuracy are smooth. Likewise noisy examples coming during a drift are also difficult to identify. Finally feature weighting techniques tends to over-fit data and to perform worse than instance selectors according to~\cite{klinken04}.
 
 \begin{table}[!htp]
 \renewcommand{\arraystretch}{1.3}
 \centering
 \scriptsize
-\caption{Summary descripion of streaming instance selection methods. Information about the type of selection and whether drift detection is used or not.}
-\label{tab:fs}
-\begin{tabular}{ lcc }
+\caption{Summary description of streaming IS methods. Information about the selection measure, whether drift detection is used or not, and the type of selection is shown here.}
+\label{tab:instance}
+\begin{tabular}{ lccc }
 \toprule
-{\bf Method} & {\bf Type of selector} & {\bf Drift detection}\\
+{\bf Method} & {\bf Selection type} & {\bf Drift detection} & {\bf Edition/Condensation} \\
 \midrule
-IB3~\cite{aha91} & case accuracy & no\\
-LWF~\cite{salga93} & weighting & no\\
-PECS~\cite{salga97} & case accuracy & no\\
-BBNR+CRR~\cite{masud10} & competence & no\\
-IBL-DS~\cite{berin07} & time-space distance & yes\\
-FISH~\cite{gomes14} & time-space distance & no\\
-NEFCS+SRR~\cite{lu16} & competence & yes\\
+IB3~\cite{aha91} & case accuracy & no & yes/no\\
+PECS~\cite{salga97} & case accuracy & no & yes/no\\
+LWF~\cite{salga93} & instance weighting & no & yes/no\\
+ICF~\cite{brighton02} & competence & no & yes/yes\\
+CBE~\cite{delany05} & competence & no & yes/yes\\
+NEFCS-SRR~\cite{lu16} & competence \& case accuracy & yes & yes/yes\\
+IBL-DS~\cite{berin07} & time-space distance & yes & yes/yes\\
+FISH~\cite{zlio11} & time-space distance & no & yes/yes\\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Another relevant topic to be considered when electing instance selectors is whether enhancement and/or maintenance tasks are applied or not. Competence-based methods usually consists of two techniques, one for noise removal and another for redundancy. Redundancy is mainly ignored in accuracy-based techniques since most of them select instances according to the number incorrect predictions committed by each one. Distance-based algorithms implicitly removes redundancy through the space factor in the distance formula.
 
 %
 %%Despite this, the PECS algorithm differs from IB3 in several ways: First, any new observation is immediately included in the case-base. Second, the PECS algorithm calculates a case's accuracy based only on its latest $l$ predictions. Third, rather than permanently deleting a case as noise, the PECS algorithm deactivates it and tracks its accuracy for reactivation purposes. Experiments show that the algorithm improves robustness over IB3 on time-varying tasks at the cost of increased storage requirements. However, PECS was originally designed to improve performance in concept drift problems, where noise along with incoming observations was not considered. As a result, all noisy observations are retained first and can only be removed with a deferment. PECS has also been criticized for its unlimited memory assumption~\cite{berin07}, by only disabling cases but not deleting them. 
@@ -259,13 +328,13 @@ NEFCS+SRR~\cite{lu16} & competence & yes\\
 %
 %%However, a hybrid of two CBM methods designed for a static environment does not guarantee effective learning under concept drift. In the worst case, novel concepts can be consistently discarded, especially with gradual concept drift. In addition, the BBNR algorithm has difficulties in removing small groups of noisy cases. For example, two noisy cases that have each other in their coverage sets can correctly classify each other but can cause the misclassification of all other nearby cases; these small groups of noisy cases can never be removed by the BBNR, even though they continue to provide incorrect classification results. This phenomenon can be caused by outdated cases when concept drift occurs. 
 %
-%Last but not least, BBNR neglects the competence model maintenance issue. Referring to an ill-matched competence model may lead to the mistaken preservation of noisy cases, i.e., if we have previously removed a noisy case $c$ that happens to be a member of the coverage set $c$ that we are currently considering. If we do not keep the competence model up-to-date, $c$ will still be considered even though we know it is a noisy case. In level-2 learning, Delany et al. periodically reselected features to completely rebuild a CBR system. %Level-2 learning~\cite{delany05} is beyond the scope of a case-base editing method, but it is a model rebuilding strategy that can be plugged into any instance selection technique. Later studies conducted by Delany and Bridge~\cite{delany07} suggested a feature-free distance measure which showed further improvement in accuracy on the same datasets in their experiments.
+%Last but not least, BBNR neglects the competence model maintenance issue. Referring to an ill-matched competence model may lead to the mistaken preservation of noisy cases, i.e., if we have previously removed a noisy case $c$ that happens to be a member of the coverage set $c$ that we are currently considering. If we do not keep the competence model up-to-date, $c$ will still be considered even though we know it is a noisy case. In level-2 learning, Delany et al. periodically reselected features to completely rebuild a CBR system. %Level-2 learning~\cite{delany05} is beyond the scope of a case-base editing method, but it is a model rebuilding strategy that can be plugged into any IS technique. Later studies conducted by Delany and Bridge~\cite{delany07} suggested a feature-free distance measure which showed further improvement in accuracy on the same datasets in their experiments.
 %
 %Beringer and H\"ullermeier~\cite{berin07} presented an Instance-Based Learning on Data Streams (IBL-DS) algorithm that autonomously controls the composition and size of the case-base. This IBL-DS algorithm is based on three modification rules: 1) when the size of the case-base exceeds its limit, the oldest instance will be removed; 2) when concept drift is reported using Gama's detection method~\cite{gama04}, a large number of instances will be deleted in a spatially uniform but temporally skewed way. The number of cases to be removed depends on the discrepancy between the minimum error rate and the error rate of the 20 most recent classifications; 3) for every retained new case whose class dominates in a test range, all neighbors in a candidate range that belong to a different class will be removed. 
 %
-%Although Beringer and H\"ullermeier's method is instructive in that it differentiates its instance selection strategy based on whether concept drift is reported, their instance deletion strategy might be difficult to implement in problem domains such as spam filtering where all features may be binary. Removing cases temporally may also result in loss of case-base competence, e.g., deleting rare but correct cases.
+%Although Beringer and H\"ullermeier's method is instructive in that it differentiates its IS strategy based on whether concept drift is reported, their instance deletion strategy might be difficult to implement in problem domains such as spam filtering where all features may be binary. Removing cases temporally may also result in loss of case-base competence, e.g., deleting rare but correct cases.
 %
-%In~\cite{zlio11}, the authors invented a family of training set formation methods named FISH (uniFied Instance Selection algoritHm) based on ensembles of classifiers. The FISH family dynamically selects a set of relevant instances as the training set for the current target instance. The key concept of the FISH family is to linearly combine distances in time and feature space for training set selection. It includes three modifications: FISH1, FISH2 and FISH3. In FISH1, the size of a training set is fixed and set in advance. FISH2, which is considered to be central to the family, varies the size by selecting a training set that achieves the best accuracy based on leave-one-out cross validation. In FISH3, the relative importance of time and space distance is determined through an additional loop of cross validation. Although the FISH family is reported to be capable of cooperating with any base classifier, the validation set is chosen based on nearest neighbors to the current target instance. 
+%In~\cite{zlio11}, the authors invented a family of training set formation methods named FISH (uniFied IS algoritHm) based on ensembles of classifiers. The FISH family dynamically selects a set of relevant instances as the training set for the current target instance. The key concept of the FISH family is to linearly combine distances in time and feature space for training set selection. It includes three modifications: FISH1, FISH2 and FISH3. In FISH1, the size of a training set is fixed and set in advance. FISH2, which is considered to be central to the family, varies the size by selecting a training set that achieves the best accuracy based on leave-one-out cross validation. In FISH3, the relative importance of time and space distance is determined through an additional loop of cross validation. Although the FISH family is reported to be capable of cooperating with any base classifier, the validation set is chosen based on nearest neighbors to the current target instance. 
 %
 %Lu et al.~\cite{lu16} propose a case-base editing technique based on competence preservation and enhancement~\cite{smyth95}. Their solution consists of three modules: 1) competence-based drift detection, which compares the case distribution between two sliding windows of recent cases. When concept drift is detected, it also identifies the competence area where the distribution changes most significantly; 2) Noise-Enhanced Fast Context Switch (NEFCS), which enhances the system's learning capacity under concept drift; 3) Stepwise Redundancy Removal (SRR) method which controls the size of the case-base to tackle the performance issue.
 %
@@ -273,32 +342,717 @@ NEFCS+SRR~\cite{lu16} & competence & yes\\
 %
 
 
-\section{Discretization for data streaming}
+\subsection{Feature space simplification}
+\label{subsec:disc}
 
-Discretization, like other techniques, is also affected by changes in data distribution. Number and structure of discretization intervals may change over time as statitionary is not guaranteed in streaming environments. Therefore, if there appears a drift in distribution it  may be desirable that intervals also changes following the drift.
+Discretization algorithms must deal with concept drift as selection methods do. Number and definition of discretization intervals may change over time since stationarity is not guaranteed in streaming environments. Therefore, if there appears a drift in distribution it is desirable that discretization intervals also move following the concept drift.
 
-Histograms computation (equal-frequency) can be considered as one of the first technique in dealing with incremental discretization for streaming. By using the quantiles as cut points, we can partition the feature space in equal-frequency intervals. Estimation of quantiles in streams of data have been studied in depth in the literature, in both forms: approximate~\cite{ben10, webb14} and exact~\cite{gupta03, guha09}. Equal-width discretizer is another simple discretizer which only requires to know the minimum and maximum in a given feature and the number of intervals. The main drawback of these unsupervised techniques is that require records in stream arrive in random order, which is false in many learning problems. 
+Equal-frequency discretization (based on histograms) can be considered as one of the first techniques in dealing with incremental discretization. By using quantiles as cut points, the feature space can be partitioned in equal-frequency intervals. Estimation of quantiles in streams have been studied in depth in the literature, in both forms: approximate~\cite{ben10, webb14} and exact~\cite{gupta03, guha09}. Other techniques based on frequency has relied on establishing size thresholds to bins to cope with evolving discretization. Lu et al.~\cite{lu06} presented the Incremental Flexible Frequency Discretization (IFFD) algorithm. IFFD defines a range instead of a strict number of quantiles. If the updated interval's frequency reaches the maximum and the resulting frequencies are not below the minimum (in order to prevent high classification variance), FFID splits the interval into two partitions.
 
-Another important requirement to consider is that some incremental algorithms need to maintain the same set of cut points (number and meaning) over time~\cite{webb14}. That is the case of most discriminative learning algorithms. For these algorithms, a equal-width or equal-frequency discretizer could fit as both defines as input parameter the number of bins and often maintain the meaning of intervals. On the other hand, statistic algorithms, like Naive Bayes, does not require the preseervation of intervals during the subsequent predictive phase, but only to save some statistics for the current discretization scheme. 
+Equal-width discretizer is another unsupervised approach that only requires as input the range of features and the number of splitting intervals. However the main drawback here is that both approaches require streamed records arriving in random order, which is impossible in many learning problems.  
 
-According to~\cite{gama06}, one of the main problems of unsupervised discretizers is the necessity of defining the number of bins. This definition by rule (e.g., Sturges' rule) or by exploratory analysis is no longer possible in the present days where the number of instances is too large. Trying different number of bins is either possible in streaming environments. 
+Another important requirement to be considered is that some incremental algorithms require to maintain the same set of cut points (number, structure and meaning) over time~\cite{webb14}. That is the case of the most discriminative learning algorithms, for which an equal-width or equal-frequency discretizer could fit since both defines the number of bins in advance. Other static algorithms (e.g.: NB) does not require the preservation of intervals during subsequent predictive phases, but only to save some statistics for the current discretization scheme. Despite NB allows changes in interval definition, its generalization capability is affected by such displacements in definitions, specially if they are sharp.
 
-Here, we enumerate those alternatives focused on supervised discretization:
+According to~\cite{gama06}, one of the main problems of unsupervised discretizers is the necessity of defining the number of intervals in advance. Such decision can be assisted by some pre-defined rules (e.g., Sturges' rule) or by an exploratory analysis process. However exploratory analysis is no longer possible in the present days where the number of instances is too large and pre-defined rules have shown to work only with small sizes. However unsupervised discretizers are naturally designed for streaming environments since the number of intervals remains invariant and only there their limits shift over time. 
 
+Most of supervised approaches however tends to perform several merges and splits before obtaining a functional final scheme. Abrupt changes in intervals' definition highly affects the online learning process, typically smooth. Here we present a short list of supervised discretization approaches:
 
-Gama et al.~\cite{gama06} presented the Partition Incremental Discretization algorithm (PiD). This algorithm is composed by two layers. The first layer simplifies and summarizes the data; the second layer constructs the final histogram. The first layer is initialized with using a equal-width strategy. Whenever the counter of an interval is above a user defined threshold, a split operator triggers. The second layer merges the set of intervals defined by the first layer whenever it is necessary. Any discretization algorithm can be used in this layer. The input for this discretizer will be the output of the first one. 
+\begin{itemize}
+	\item Gama et al.~\cite{gama06} presented the Partition Incremental Discretization algorithm (PiD). The algorithm consists of two layers. The first one summarizes data and creates the preliminary intervals, which will be optimized in the next layer. An equal-width strategy can be used to initialize this layer. Then the first layer is updated through a splitting process whenever the number of elements in a interval is above a pre-defined threshold. The second layer performs a merging process over the previous phase in order to yield the final discretization scheme. Any discretizer can be used in second level since the intervals generated in the previous phase are used as inputs. Minimum Description Length Discretizer is used as reference in the original paper. 
+	
+	PiD has been criticized by three main reasons. First there is no exact correspondence between the first layer and the second one, which produces inaccuracies that will chain and increase over time. Secondly if the distribution of data is highly skewed, the number of intervals generated because of frequency overflowing will dramatically increase. Finally the splitting process may become even more inaccurate if many repetitions of a single value appear. In this case a cut point might be generated dividing examples with the same value into two different bins, which creates avoidable inconsistencies.
+	%\item Related to equal-frequency discretization, Lu et al.~\cite{lu06} presented the Incremental Flexible Frequency Discretization (IFFD) algorithm. IFFD defines a range $[minBinsize, maxBinsize)$ instead of a strict number of quantiles. The split \& merge process is described as follows: if the updated interval's frequency reaches $maxBinsize$ and the resulting frequencies are not below $minBinSize$ (in order to prevent high classification variance), FFID splits the interval into two partitions. If not, there is no split and the updating process continues. The main advantage of IFFD is that its local updating process only affects a minimum number of intervals.
+	\item In~\cite{lehti12} an online version of ChiMerge (OC), which maintains the O($nlog(n)$) time complexity held by the original algorithm, is proposed. In order to also guarantee equal discretization results, authors implement an online approach based on windows, which uses several data structures to emulate the same behavior held by the original version. Despite of the great effectiveness claimed by the authors, a high increment in the memory usage derived from the set of data structures is attached to this online version. This fact may prevent from its usage in some data stream scenarios.
+\end{itemize}
 
-Related to equal-frequency discretization, Lu et al.~\cite{lu06} presented the Incremental Flexible Frequency Discretization (IFFD) algorithm. This method defines a range $[minBinsize, maxBinsize)$ instead of a strict number of quantiles. The split \& merge process is described as follows: if the updated interval's frequency
-reaches maxBinsize and the resulting frequencies are below $minBinSize$, FFID splits the interval into two partitions. If not, there is no split and the updating process continues. By this means, IFFD makes the update process local, affecting a minimum number of intervals and associated statistics.
+A brief classification about streaming discretizers is given in Table~\ref{tab:disc}. Two alternatives representing different discretization types~\cite{garcia14} are shown here. Classification is performed according to three factors: evaluation measures (statistical/binning/information/others), and the type of interval generation (merging/splitting intervals). The most important takeaway here is that we lack of a wrapper approach that generate intervals by means of an online classifier, as proposed before by some feature selectors. A wrapper approach could even solve the problem of displacements in intervals' definitions due to the closer relationship between the online classifier and the discretizer.
+
+\begin{table}[!htp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scriptsize
+\caption{Summary description of streaming discretization methods. Information about the name and type of discretization strategy is shown here.}
+\label{tab:disc}
+\begin{tabular}{lcc}
+\toprule
+{\bf Method} & {\bf Discretization strategy}\\
+\midrule
+PiD~\cite{gama06} & binning \& information (split \& merge)\\
+%IFFD~\cite{lu06} & binning (split)\\
+OC~\cite{lehti12} &  statistical (merge)\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 %Ben-Haim et al.~\cite{ben10}, presented an incremental and online discretization for decision trees. Their algorithm is based on three methods: update: add a new example. It can be done by inserting the new example directly in an existing histogram or create a new bin with it and then do a merge; merge: join two bins into only one; uniform: use a trapezoid method to build the final Equal Frequency bins. This method has a low computational requirement and is incremental but it introduces some errors. In case of skewed distributions the authors recommend to use bound error algorithms.
 
-In~\cite{lehti12}, the authors proposed an online version of ChiMerge. This online version maintains the O($nlog(n)$) time requirement of the batch version of ChiMerge. However, the price that needs to be paid is maintaining some data structures, including a binary tree for the observed values. Maintaining all these data structures implies that the space requirement can turn out to be prohibitive in some data stream scenarios. Moreover, in order to guarantee equal discretization results, they use a window-based approach instead of an up-to-date evaluation process.
+\section{Experiments}
+\label{sec:exp}
 
+In this section we evaluate the usefulness and performance of the streaming preprocessing proposals presented before, from different perspectives:
+
+\begin{itemize}
+	\item Effectiveness: measured as the number of correctly classified instances divided by the total number of instances in the training set (accuracy). It can be considered as the most relevant factor in measuring usefulness of proposals.
+	\item Time performance: measured as the total time spent by the algorithm in the reduction/discretization phase. Usually performed before the learning phase, although sometimes it runs simultaneously to the prediction phase.
+	\item Reduction rate: measured as the amount of reduction accomplished with respect to the original set (in percentage). For selection methods, it is related to the number of rows/columns removed, whereas for discretization, it is related to the degree of simplification of feature spaces.
+\end{itemize} 
+
+First the experimental framework is defined in Section~\ref{subsec:framework}. Here the list of datasets and methods, and other considerations are presented. Once defined the framework, the results and analysis of proposals are presented by grouping the methods by task performed. Each task requires different settings due to its unlike characteristics, which will be explained in each section. The order is as follows: FS (Section~\ref{subsec:fsel}), IS (Section~\ref{subsec:isel}), and discretization (Section~\ref{subsec:disc}).
+
+\subsection{Experimental framework: datasets, methods and parameters}
+\label{subsec:framework}
+
+
+Table~\ref{tab:datasets} shows the complete list of artificial and real datasets used in our experiments to assess the reduction techniques. Artificial datasets have been generated using Massive Online Analysis (MOA) benchmark~\cite{bifet10}, providing a wide range of drifting environments (blips, sudden and gradual, among others described in Section~\ref{sec:stream}). Each artificial dataset has been created using different combinations of generators and different parameter values. For a complete description of datasets, and source code, please refer to our GitHub repository\footnote{\url{https://github.com/sramirez/MOAReduction}}. 
+
+\begin{table}[!htp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scriptsize
+\caption{Relevant information about classification datasets. For each
+row, the number of instances evaluated (\#Inst.), the number of attributes (\#Atts.) (which ones are numerical (\#Num.) and which ones nominal (\#Nom.)), the number of classes (\#Cl), and whether the dataset is artificially generated or not (artificial) are shown.}
+\label{tab:datasets}
+\resizebox{0.9\textwidth}{!}{
+  \begin{tabular}{|l||c||c||c||c||c||c|}
+  \hline {\bf Data Set} & {\bf \#Inst.} & {\bf \#Atts.} & {\bf \#Num.} & {\bf \#Nom.} &{\bf \#Cl.} & {\bf artificial}\\
+  \hline
+\textit{blips} & 500,000 & 20 & 20 & 0 & 4 & yes\\ 
+%\textit{fast\_sudden\_recurring} & 500,000 & 10 & 5 & 5 & 6 & yes\\ 
+\textit{gradual\_drift} & 500,000 & 3 & 3 & 0 & 2 & yes\\ 
+%\textit{gradual\_gradual\_virtual} & 500,000 & 40 & 40 & 0 & 3 & yes\\ 
+\textit{gradual\_recurring\_drift} & 500,000 & 20 & 20 & 0 & 4 & yes\\ 
+\textit{incremental\_fast} & 500,000 & 10 & 10 & 0 & 4 & yes\\ 
+\textit{incremental\_slow} & 500,000 & 10 & 10 & 0 & 4 & yes\\ 
+\textit{no\_drift} & 500,000 & 24 & 0 & 24 & 10 & yes\\ 
+\textit{sudden\_drift} & 500,000 & 3 & 3 & 0 & 2 & yes\\ 
+%\textit{sudden\_virtual} & 500,000 & 24 & 0 & 24 & 10 & yes\\ 
+%\textit{virtual\_drift} & 500,000 & 40 & 40 & 0 & 3 & yes\\ 
+\textit{airlines} & 539,383 & 6 & 3 & 3 & 2 & no\\ 
+\textit{covtypeNorm} & 581,011 & 54 & 10 & 44 & 7 & no\\ 
+\textit{elecNormNew} & 45,311 & 8 & 7 & 1 & 2 & no \\ 
+\textit{kddcup\_10} & 494,020 & 41 & 39 & 2 & 2 & no\\ 
+\textit{poker-lsn} & 829,201 & 10 & 5 & 5 & 10 & no\\ 
+\textit{spambase} & 4,601 & 57 & 57 & 0 & 2 & no\\ 
+\textit{spam\_nominal} & 9,324 & 40,000 & 0 & 40,000 & 2 & no\\ 
+\textit{usenet\_recurrent} & 5,931 & 659 & 0 & 659 & 2 & no\\ 
+\textit{spam\_data} & 9,324 & 499 & 0 & 499 & 2 & no\\ 
+\textit{usenet1} & 1,500 & 100 & 0 & 100 & 2 & no\\ 
+\textit{usenet2} & 1,500 & 100 & 0 & 100 & 2 & no\\ 
+\textit{usenet3} & 5997 & 27,893 & 0 & 27,893 & 2 & no\\ 
+\textit{power\_supply} & 29,928 & 2 & 2 & 0 & 24 & no\\ 
+  \hline
+  \end{tabular}
+}
+\end{table}
+
+Real datasets come from different sources:
+
+\begin{itemize}
+	\item \textit{airlines}, \textit{elecNormNew}, \textit{poker-lsn}, and \textit{covtypeNorm} can be found in MOA's streams repository.
+	\item \textit{spam\_data}, \textit{usenet1}, \textit{usenet2}, and \textit{usenet3} are e-mail datasets affected by concept drift, collected by The Machine Learning and Knowledge Discovery (MLKD) group (\url{http://mlkd.csd.auth.gr/concept_drift.html}).
+	\item \textit{spambase} is a collection of e-mails classified as spam~\cite{bache13}. 
+	\item \textit{kddcup\_10}, \textit{spam\_nominal} (SpamAssasin), and \textit{usenet\_recurrent} were collected by Dr. Gama and his research group KDUS (\url{http://www.liaad.up.pt/kdus/products/datasets-for-concept-drift}). 
+	\item Last dataset (\textit{power\_supply}) comes from Stream Data Mining Repository (\url{http://www.cse.fau.edu/~xqzhu/stream.html}), and contains power supply registers collected hourly from an electricity company.
+\end{itemize}
+ 
+Not all datasets described above have been considered in every experiment. Some algorithms are designed to deal with a particular kind of data. For instance, most of feature selectors require discrete features inasmuch as they are based on information-based measures. Because MOA generators~\cite{bifet10} only generate datasets with continuous attributes, these datasets will not be considered for FS. The final election of datasets and any detail concerned to their features will be described in further sections.
+
+No previous fixed partitioning has been performed on datasets, instead an online evaluation approach has been elected to asses the quality of methods, known as \textbf{interleaved test-then-train}. This technique, proposed by Bifet et al. in~\cite{bifet09}, defines a model in which each example/batch (arriving at time $t$) is evaluated against $t-1$-model, and then it serves as input to update that model and forms the subsequent $t$-model. Interleaved model arises as a very accurate for streaming evaluate since it never tests models on already seen elements. This kind of evaluation however requires much more evaluations, as many as elements in the training set.
+
+Reduction techniques used in experiments are listed and grouped by task in Table~\ref{tab:parameters}. The default parameter values has been established according to the authors' criterion. Common parameters --like window size or the number of initial elements to consider before starting the reduction process-- tends to have common values within the same group. A window size equals to one means that the algorithms work in an online way, whereas a value higher than one implies a batch-based processing. For instance, FS and discretization methods exhibit an online behavior, whereas most of instance selectors process elements in batches (except FISH and kNN).
+
+\begin{table}[!htp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scriptsize
+\caption{Parameters of methods. Default values for each block of methods are detailed in first rows. Unless specified, these values are common to every method in block.}
+\label{tab:parameters}
+  \resizebox{.75\textheight}{!}{
+  \begin{tabular}{|l|l|}
+  \hline
+  \textbf{Method} & \textbf{Parameters} \\
+  \hline
+  \textbf{Feature selection} & window size = 1 (default)\\
+  NB & --\\
+  IG~\cite{kata05} & --\\
+  SU~\cite{nguyen12} & --\\
+  OFS~\cite{wang14} & $\eta$ = 0.2, $\lambda$ = 0.01\\
+  \hline
+  \textbf{Instance selection} & k = 3, window size = 100 (default)\\
+  kNN & window size = 1\\  
+  NEFCS-SRR~\cite{lu16} & l = 10, pmax = 0.5, size limit = 1,000\\
+  CBE~\cite{delany05} & --\\
+  ICF~\cite{brighton02} & --\\
+  FISH~\cite{zlio11} & learner = kNN, distance proportion (time/space) = 0.5, window size = 1\\
+  %Learn++.NSE & learner = kNN, slope = 0.5, crossing point = 10, ensemble size = 15, pruning = no\\
+  \hline
+  \textbf{Discretization} & initial elements = 100, window size = 1 (default)\\
+  NB & --\\
+  OC~\cite{lehti12} &  --\\
+  PiD~\cite{gama06} & $\alpha$ = 0.75, initial bins = 500, instances to update layer \#2 = 10,000, min/max = 0/1\\
+  \hline
+  \end{tabular}
+  }
+\end{table}
+
+As most of feature selectors and discretizers are focused on NB, it has been elected as benchmark for these groups. Likewise, kNN serves as reference for instance selectors. Prediction and training processes are performed unlikely for each task. 
+
+For instance, for FS, contingency tables in NB are updated whenever an example arrives. And during the classification phase NB only makes predictions by considering the most relevant features. 
+
+Training in discretization is also accomplished following the previous scheme, with the particularity that the structure of contingency tables may change whenever new intervals are generated. A new discretization scheme means old model will be outdated and the amount of errors will sharply increase. %Prediction is performed as usual, without selection.
+
+As to IS, those methods with best results according to~\cite{lu16} have been selected for our experiments. Different update schemes have been adopted depending on the original design held by each selector. For kNN and FISH, an instant-update scheme has been adopted. In this scheme new instances are immediately added to the case-base. Note that this approach gives kNN a clear advantage over the rest of methods since an ever-updated case-base tends to adapt well to changes. However it also introduces a lot of redundancy which does not affect accuracy. 
+
+
+FISH selects a different training set whenever a new example arrives, thus acting in an online way. In counterpart, NEFCS shows a batch-like behavior which requires two windows for drift detection. Here the updating of the case-base is deferred until a complete batch of examples is available. For a fair comparison between competence models (CBE, ICF, NEFCS-SRR), we have adopted a model based on batches for all these algorithms. New instances are immediately added to the case-base in CBE and ICF, but reduction is only performed when the batch size condition is met. 
+%Finally, Learn++.NSE creates a new classifier and adds it to the ensemble whenever a new batch arrives. 
+
+The whole experimental environment has been executed in a single standard machine, with the following features: 2 processors Intel Core i7 CPU 930 (4 cores/8 threads, 2.8 GHz, 8 MB cache), 24 GB of DDR2 RAM, 1 TB SATA HDD (3 Gb/s), Ethernet network connection, CentOS 6.4 (Linux). Algorithm developed have been integrated in MOA software (16.04v) as an extension library~\footnote{\url{http://moa.cms.waikato.ac.nz/moa-extensions/}}. MOA has also served as benchmark for our experiments.
+
+%\subsection{Experimental analysis}
+%
+%Once the experimental framework and its design is defined, we analyze the experimental results derived from it. This analysis has been divided in three sections according to the different data reductions tasks studied: FS, IS, and discretization.
+
+\subsection{\textbf{Feature Selection}}
+\label{subsec:exp-fsel}
+
+Here, we evaluate how well selection of relevant features is performed by the streaming methods. As most of these methods assumes features are discrete, we have only selected from Table~\ref{tab:datasets} those problems with no numerical attributes. Note that all these datasets comes from the text mining field, in which each attribute represents the presence or the absence of a given word. These datasets fits well for FS as the corpus of words/features is normally quite large.
+
+Firstly, in Table~\ref{tab:acc-fsel}, we measure the classification accuracy held by the three feature selectors considered in the experimental framework: IG, SU, and OFS; plus NB without selection. From results we can claim that NB yields better results when all features are available during prediction. None of the selection schemes show better effectiveness than NB. IG and SU however generate results pretty close to NB, with the advantage of generating much simpler solutions (as can be seen in Figure~\ref{fig:red-fsel}). 
+
+Comparing selectors, we can note that information-based methods are more accurate than OFS (based on feature weighting). Specially remarkable are the \textit{spam\_data} and \textit{usenet\_recurrent} cases, where even with only ten words the classifier is able to predict perfectly all examples. 
+%Similar results can also be found in \textit{usenet1}, and \textit{usenet2}, which are skinny problems that only get reduced with the lowest selection scheme (10 features).  
+
+
+\begin{table*}[!t]
+  \caption{Final test accuracy by method (FS). The best outcome for
+each dataset is highlighted in bold. The second row in header represents the number of feature selected. No selection is performed for NB.} \label{tab:acc-fsel}
+  \centering
+  \resizebox{1.\textwidth}{!}{
+\begin{tabular}{|l|rrrrrrrrrr|}
+\toprule
+ & \multicolumn{1}{c}{\textbf{Na\"ive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{SU}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
+  & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} &
+ \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}}\\ \hline
+\textit{spam\_data} & 90.6692 & 89.2750 & 90.8516 & 90.6692 & 88.9103 & 90.4333 & 90.6692 & 90.0579 & \textbf{91.7417} & 90.6692 \\ 
+\textit{spam\_nominal} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} \\
+\textit{usenet1} & \textbf{63.3333} & 53.6667 & \textbf{63.3333} & \textbf{63.3333} & 53.2667 & \textbf{63.3333} & \textbf{63.3333} & 58.3333 & \textbf{63.3333} & \textbf{63.3333} \\
+\textit{usenet2} & \textbf{72.1333} & 66.9333 & \textbf{72.1333} & \textbf{72.1333} & 66.6667 & \textbf{72.1333} & \textbf{72.1333} & 68.2000 & \textbf{72.1333} & \textbf{72.1333} \\ 
+\textit{usenet3} & \textbf{84.6038} & 68.8073 & 78.2319 & 82.9024 & 69.0242 & 77.8816 & 82.8691 & 54.0951 & 57.4646 & 70.5922 \\
+\textit{usenet\_recurrent} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} \\ 
+\textit{no\_drift} & 51.4120 & \textbf{51.4240} & 51.4120 & 51.4120 & \textbf{51.4240} & 51.4120 & 51.4120 & 32.5830 & 51.4120 & 51.4120 \\
+\midrule
+\textbf{MEAN} & \textbf{80.3074} & 75.7295 & 79.4232 & 80.0643 & 75.6131 & 79.3134 & 80.0596 & 71.8956 & 76.5836 & 78.3057 \\ 
+     \bottomrule
+\end{tabular}
+	}
+\end{table*}
+
+To assert that no method is better than NB, we convey an statistical analysis on classification accuracy results through two non-parametric tests: Wilcoxon Signed-Ranks Test (one vs. one) and Friedman-Holm Test (one vs. all)~\cite{garcia09, derrac11}. Wilcoxon Test conducts pairwise comparisons between the reference method and the rest. A level of significance $\alpha = 0.05$ has been chosen for this experiment. The first two columns in Table~\ref{tab:friedman-fsel} show Wilcoxon's results for accuracy, where '+' symbol indicates the number of methods outperformed by each algorithm in row. Symbol '$\pm$' represents the number of wins and ties yielded by each method. The best value by column is highlighted by a shaded background. The remaining columns show the results for the Friedman test. The first one shows effectiveness ranking of methods, ordered from the best mark (top row) to the worst. Note that the best method is established as the control algorithm. The second column contains the adjusted p-values for each method according to the post hoc Holm's test. The same level of significance ($\alpha = 0.05$) has been established for this test.
+
+According to the results shown in Table~\ref{tab:friedman-fsel}, we can assert no method is significantly better than NB without discretization when using 10 features. As to 100 and 1,000 features, the new outperforming method is SU although without showing statistically significance with respect to most of the alternatives.
+
+% represents the most appropriate solution for FS processing as best-ranked. According to the Friedman-Holm evaluation, the difference in accuracy between \textit{SU-1,000} and the rest of methods is only statistically significant in case ten features are selected. 
+
+%
+%
+%\begin{table}[!htp]
+%\renewcommand{\arraystretch}{1.3}
+%\centering
+%\scriptsize
+%\caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
+%\label{tab:friedman-fsel-10}
+%\resizebox{0.6\textwidth}{!}{
+%\begin{tabular}{lcccc}
+%\hline
+% Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+% & $+$ & $\pm$ & & \\
+%\toprule
+%NB & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 3 & 7 & -- \\
+%OFS-10 & 0 & 2 & 16.7143 & 0.063201 \\ 
+%InfoGain-10 & 0 & \cellcolor[gray]{0.8} 3 & 17.1429 & 0.063201 \\ 
+%SU-10 & 0 & \cellcolor[gray]{0.8} 3 & 17.1429 & 0.063201 \\ 
+%\hline
+%\end{tabular}
+%}
+%\end{table}
+%
+%
+%\begin{table}[!htp]
+%\renewcommand{\arraystretch}{1.3}
+%\centering
+%\scriptsize
+%\caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
+%\label{tab:friedman-fsel-100}
+%\resizebox{0.6\textwidth}{!}{
+%\begin{tabular}{lcccc}
+%\hline
+% Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+% & $+$ & $\pm$ & & \\
+%\toprule
+%SU-100 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 11.6429 & --\\
+%OFS-100 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 11.9286 & 0.017455 \\ 
+%NB & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 17.2143 & 0.615351 \\
+%InfoGain-100 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 17.2143 & 0.615351 \\ 
+%\hline
+%\end{tabular}
+%}
+%\end{table}
+
+\begin{table}
+\centering
+\begin{subtable}{.6\textwidth}
+\centering
+\resizebox{0.9\textwidth}{!}{
+\begin{tabular}{lcccc}
+\hline
+ Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+ & $+$ & $\pm$ & & \\
+\toprule
+NB & \cellcolor[gray]{0.8} 1 & \cellcolor[gray]{0.8} 3 & 7 & -- \\
+OFS-10 & 0 & 2 & 16.7143 & 0.063201 \\ 
+InfoGain-10 & 0 & \cellcolor[gray]{0.8} 3 & 17.1429 & 0.063201 \\ 
+SU-10 & 0 & \cellcolor[gray]{0.8} 3 & 17.1429 & 0.063201 \\ 
+\hline
+\end{tabular}
+}
+\caption{10 features selected}
+\end{subtable}
+
+\begin{subtable}{.6\textwidth}
+\centering
+\resizebox{0.9\textwidth}{!}{
+\begin{tabular}{lcccc}
+\hline
+ Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+ & $+$ & $\pm$ & & \\
+\toprule
+SU-100 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 11.6429 & --\\
+OFS-100 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 11.9286 & 0.017455 \\ 
+NB & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 17.2143 & 0.615351 \\
+InfoGain-100 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 17.2143 & 0.615351 \\ 
+\hline
+\end{tabular}
+}
+\caption{100 feature selected}
+\end{subtable}%
+
+
+\begin{subtable}{.6\textwidth}
+\centering
+\resizebox{0.9\textwidth}{!}{
+\begin{tabular}{lcccc}
+\hline
+ Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+ & $+$ & $\pm$ & & \\
+\toprule
+SU-1000 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 10.5714 & -- \\
+OFS-1000 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 14.1429 & 0.487181 \\ 
+NB & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 16.5714 & 0.487181\\
+InfoGain-1000 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 16.7143 & 0.487181\\ 
+\hline
+\end{tabular}
+}
+\caption{1,000 feature selected}
+\end{subtable}
+\caption{Wilcoxon test results and average rankings of feature selectors (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
+\label{tab:friedman-fsel}
+\end{table}
+
+%\begin{table}[!htp]
+%\renewcommand{\arraystretch}{1.3}
+%\centering
+%\scriptsize
+%\caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
+%\label{tab:friedman-fsel-1000}
+%\resizebox{0.6\textwidth}{!}{
+%\begin{tabular}{lcccc}
+%\hline
+% Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+% & $+$ & $\pm$ & & \\
+%\toprule
+%SU-1000 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 10.5714 & -- \\
+%OFS-1000 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 14.1429 & 0.487181 \\ 
+%NB & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 16.5714 & 0.487181\\
+%InfoGain-1000 & \cellcolor[gray]{0.8} 0 & \cellcolor[gray]{0.8} 3 & 16.7143 & 0.487181\\ 
+%\hline
+%\end{tabular}
+%}
+%\end{table}
+
+
+Figure~\ref{fig:fsel} depicts selection time spent by each algorithm, as well as the amount of reduction performed by each selection scheme, ranging from ten to one thousand features.
+No selection stands as the fastest alternative. Despite the complete set of feature is used for predictions, this alternative offers better results due to the avoidance of feature relevance computations. Among the selection alternatives, OFS performs faster than the information-based selectors. However, OFS has shown in Table~\ref{tab:acc-fsel} to obtain less accurate schemes than its competitors. 
+
+\begin{figure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/time_fsel}
+  \caption{Selection time (in seconds)}
+  \label{fig:time-fsel}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/red_fsel}
+  \caption{Reduction rate (in percentage)}
+  \label{fig:red-fsel}
+\end{subfigure}
+\caption{Box-plot representation for selection time and reduction (FS)}
+\label{fig:fsel}
+\end{figure}
+
+%Regarding the best selection scheme (number of features to select), 
+Although a better reduction rate is achieved in \textit{10-features} scheme (close to $100\%$ in mean), by selecting 1,000 features we can yield better marks and a reduction rate quite acceptable ($> 25\%$). Note that no selection is conducted on 4/7 problems when we choose the \textit{1,000-features} scheme since there are not enough attributes to select.
+
+In conclusion, \textit{SU-1,000} can be elected as the best choice because of its competitive accuracy results similar to those yielded by NB, and its good reduction rate. Time results do not show significant differences between alternatives.
+
+
+%\begin{table*}[!t]
+%  \caption{Selection time elapsed by method (FS)} \label{tab:time-fsel}
+%  \centering
+%  \resizebox{.75\textheight}{!}{
+%\begin{tabular}{|l|rrrrrrrrrr|}
+%\toprule
+% & \multicolumn{1}{c}{\textbf{Naive Bayes}} & \multicolumn{3}{c}{\textbf{InfoGain}} & \multicolumn{3}{c}{\textbf{SU}} & \multicolumn{3}{c|}{\textbf{OFS}} \\
+%  & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} &
+% \multicolumn{1}{c}{\textit{1,000}} & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}}\\ \hline
+%\textit{spam\_data} & 4.22 & 16.94 & 20.85 & 28.28 & 15.79 & 19.68 & 27.79 & 9.89 & \textbf{1.04} & 21.79 \\ 
+%\textit{spam\_nominal} & 546.61 & 1,143.88 & 1,100.08 & 979.41 & 1,029.45 & 1,144.02 & 1,215.26 & 746.85 & \textbf{357.58} & 830.86 \\
+%\textit{usenet1} & \textbf{0.41} & 1.42 & 2.37 & 2.11 & 1.44 & 2.11 & 2.21 & 1.07 & 5.16 & 1.25 \\
+%\textit{usenet2} & \textbf{0.43} & 1.44 & 2.08 & 2.26 & 1.50 & 2.13 & 1.79 & 1.04 & 12.49 & 1.60 \\ 
+%\textit{usenet3} & 277.80 & 501.81 & 505.50 & 590.49 & 561.33 & 525.37 & 678.62 & 357.58 & \textbf{12.88} & 362.54 \\
+%\textit{usenet\_recurrent} & \textbf{2.84} & 7.88 & 8.11 & 13.19 & 7.73 & 8.88 & 13.62 & 5.16 & 819.22 & 10.43 \\ 
+%\textit{no\_drift} & 2.60 & 30.63 & 24.06 & 27.27 & 30.32 & 25.73 & 22.44 & 12.49 & \textbf{1.66} & 12.83 \\
+%\midrule
+%\textbf{MEAN} & \textbf{119.27} & 243.43 & 237.58 & 234.72 & 235.37 & 246.85 & 280.25 & 162.01 & 172.86 & 177.33 \\ 
+%     \bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
+
+
+
+
+
+%\begin{table*}[!t]
+%  \caption{Reduction rate performed by the different FS schemes} \label{tab:red-fsel}
+%  \centering
+%  \resizebox{.35\textheight}{!}{
+%\begin{tabular}{|l|rrr|}
+%\toprule
+%  & \multicolumn{3}{c|}{\textbf{\# features selected}} \\
+%  & \multicolumn{1}{c}{\textit{10}} & \multicolumn{1}{c}{\textit{100}} & \multicolumn{1}{c|}{\textit{1,000}} \\ \hline
+%\textit{spam\_data} & \textbf{98.00} & 79.96 & 0.00 \\ 
+%\textit{spam\_nominal} & \textbf{99.98} & 99.75 & 97.50 \\
+%\textit{usenet1} & \textbf{90.00} & 0.00 & 0.00 \\
+%\textit{usenet2} & \textbf{90.00} & 0.00 & 0.00 \\ 
+%\textit{usenet3} & \textbf{99.96} & 99.64 & 96.41 \\
+%\textit{usenet\_recurrent} & \textbf{98.48} & 84.83 & 0.00 \\ 
+%\textit{no\_drift} & \textbf{58.33} & 0.00 & 0.00 \\
+%\midrule
+%\textbf{MEAN} & \textbf{90.68} & 52.03 & 27.70 \\ 
+%\bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
+
+
+
+\subsection{\textbf{Instance Selection}}
+\label{subsec:exp-isel}
+
+Here we evaluate how IS methods perform on drifting environments. As opposed to Section~\ref{subsec:fsel}, in this experiment we have included datasets with both numerical and nominal attributes. In previous experiments~\cite{lu16} instance selectors have shown impractical when dealing with medium datasets. Because of that we have discarded those problems with a number of instances $> 100,000$. Additionally, we have created new artificial datasets with a lower number of examples ($10,000$ instances). 
+
+Table~\ref{tab:acc-isel} shows accuracy results by method (column) and dataset (row). Table~\ref{tab:wilcoxon-isel} shows results on accuracy for the Wilcoxon and Friedman-Holm test, following the same scheme presented in Section~\ref{subsec:fsel}. From these results, we can conclude that: 
+
+\begin{itemize}
+	\item The best method in mean is updated kNN without selection ($80.49\%$). The closest competitor (CBE) is five units below kNN. Despite instant update provides an important advantage on kNN, other online methods, like FISH or ICF, do not respond well to changes.
+	\item No method is statistically better than updated kNN. Although kNN wins in each pairwise comparison in Wilcoxon tests, it only significantly overcomes ($\alpha = 0.05$) FISH and ICF according to Friedman-Holm tests.
+	\item Selection methods makes decisions about the relevance or disturbance of a given instance without knowing how it will be in the future. It is normal that the no-selection option always performs better than others. It only depends on the amount of noise introduced by each problem, and not by other factors like redundancy. %In counterpart, kNN is always updated, and it is only influenced by noise, not by redundancy.
+\end{itemize}
+
+
+\begin{table*}[!t]
+  \caption{Total test accuracy by method (IS)} \label{tab:acc-isel}
+  \centering
+  \resizebox{.75\textheight}{!}{
+\begin{tabular}{|l|rrrrr|}
+\toprule
+ & \multicolumn{1}{l}{\textbf{NEFCSSRR}} & \multicolumn{1}{l}{\textbf{ICF}} & \multicolumn{1}{l}{\textbf{CBE}} & \multicolumn{1}{l}{\textbf{FISH}} & \multicolumn{1}{l|}{\textbf{kNN}} \\ \hline
+\textit{elecNormNew} & 67.7652 & 43.7882 & 73.8105 & 60.0455 & \textbf{84.0815} \\ 
+\textit{powersupply} & 11.9400 & 4.2502 & 12.3800 & 5.4435 & \textbf{15.1296} \\ 
+\textit{spambase} & 81.6779 & 39.3827 & \textbf{97.5440} & 95.9139 & 95.1532 \\ 
+\textit{spam\_data} & 88.8782 & 25.6113 & 91.1197 & 77.3488 & \textbf{93.9833} \\ 
+\textit{spam\_nominal} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} \\ 
+\textit{usenet1} & \textbf{56.6667} & 54.5333 & 54.0667 & 55.2000 & 56.4667 \\ 
+\textit{usenet2} & 61.2000 & 63.4667 & 48.4000 & \textbf{69.8000} & 68.2000 \\ 
+\textit{usenet\_recurrent} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} & \textbf{100.0000} \\ 
+\textit{blips} & 90.8900 & 34.1300 & 94.2300 & 31.3200 & \textbf{97.1800} \\ 
+\textit{sudden\_drift} & 76.5300 & 61.7300 & 74.2300 & 60.8700 & \textbf{82.6600} \\ 
+\textit{gradual\_drift} & 68.2700 & 52.3600 & 74.4500 & 52.0200 & \textbf{81.2700} \\ 
+\textit{gradual\_recurring\_drift} & 87.5800 & 28.9400 & 92.6500 & 28.8400 & \textbf{96.3300} \\ 
+\textit{incremental\_fast} & 65.8900 & 51.7700 & 68.4000 & 55.8300 & \textbf{77.2800} \\ 
+\textit{incremental\_slow} & 72.4300 & 50.9800 & 68.7000 & 56.5800 & \textbf{79.1000} \\ 
+\midrule
+\textbf{MEAN} & 73.5513 & 50.7816 & 74.9986 & 60.6580 & \textbf{80.4882} \\ 
+\bottomrule
+\end{tabular}
+	}
+\end{table*}
+
+\begin{table}[!htp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scriptsize
+\caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
+\label{tab:wilcoxon-isel}
+\resizebox{0.75\textwidth}{!}{
+\begin{tabular}{lcccccc}
+\hline
+ Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+ & $+$ & $\pm$ & & \\
+\toprule
+kNN & \cellcolor[gray]{0.8} 4 & \cellcolor[gray]{0.8} 4 & 18.2143 & --\\
+CBE & 2 & 3 & 26.1429 & 0.321710\\
+NEFCSSRR & 2 & 3 & 29 & 0.321710\\
+FISH & 0 & 1 & 47.5 & 0.000421\\
+ICF & 0 & 1 & 56.6429 & 0.000002\\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+
+
+Regarding reduction and time, Figure~\ref{fig:fsel} depicts the distribution for both variables. From these plots, we can claim that CBE can be considered as the most accurate solution, and it also offers the most reduced schemes. CBE however spends a long time in selection. NEFCSSRR also represents an interesting option as this method shows precise, and performs faster than CBE. The outstanding reduction rate of FISH is explained because it normally selects the kNN for each new example. This fact also explains its poor outcome on accuracy.
+%Notice that Learn.NSE++ has not been included in Figure~\ref{fig:inst-isel} because no explicit reduction is committed by this ensemble-based model. 
+%FISH does not represent a real reduction solution either, as it considers all previous instances to compute space-time distances.
+
+\begin{figure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/time_instance}
+  \caption{Selection time (in seconds)}
+  \label{fig:time-isel}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/inst_inst}
+  \caption{Reduction rate (in \# instances selected)}
+  \label{fig:inst-isel}
+\end{subfigure}
+\caption{Box-plot representation for selection time and reduction (IS)}
+\label{fig:isel}
+\end{figure}
+
+%
+%\begin{table*}[!t]
+%  \caption{Selection time elapsed by method (IS)} \label{tab:time-isel}
+%  \centering
+%  \resizebox{.75\textheight}{!}{
+%\begin{tabular}{|l|rrrrrr|}
+%\toprule
+% & \multicolumn{1}{l}{\textbf{NEFCSSRR}} & \multicolumn{1}{l}{\textbf{ICF}} & \multicolumn{1}{l}{\textbf{CBE}} & \multicolumn{1}{l}{\textbf{FISH}} & \multicolumn{1}{l}{\textbf{LearnNSE}} & \multicolumn{1}{l|}{\textbf{kNN}} \\ \hline
+%\textit{elecNormNew} & 2,910.07 & 2,643.77 & 2,913.84 & 2,618.02 & 702.55 & \textbf{16.74} \\
+%\textit{powersupply} & 2,838.86 & 2,416.89 & 2,678.02 & 2,952.24 & 53.84 & \textbf{7.02} \\
+%\textit{spambase} & 698.46 & 1,495.58 & 7,077.14 & 141.85 & 46.39 & \textbf{11.00} \\
+%\textit{spam\_data} & 2,879.77 & 2,598.12 & 22,562.15 & 5,972.89 & 2,672.26 & \textbf{355.65} \\
+%\textit{spam\_nominal} & 2,981.09 & 1,917.74 & \textbf{1,410.35} & 2,588.89 & 2,527.07 & 2,566.37 \\
+%\textit{usenet1} & 60.81 & 27.30 & 510.25 & \textbf{3.77} & 12.83 & 7.47 \\
+%\textit{usenet2} & 55.13 & 29.56 & 84.61 & \textbf{3.63} & 10.95 & 7.22 \\
+%\textit{usenet\_recurrent} & 1,438.81 & \textbf{99.25} & 3,618.86 & 2,442.95 & 1,688.52 & 350.14 \\
+%\textit{blips} & 2,725.08 & 3,245.68 & 1,762.62 & 1,461.55 & 50.02 & \textbf{9.69} \\
+%\textit{sudden\_drift} & 2,065.31 & 10,246.86 & 1,449.81 & 1,369.90 & 14.83 & \textbf{4.31} \\
+%\textit{gradual\_drift} & 2,957.79 & 7,038.86 & 1,577.92 & 1,354.11 & 18.35 & \textbf{3.66} \\
+%\textit{gradual\_recurring\_drift} & 2,535.35 & 2,996.82 & 1,108.70 & 1,391.40 & 53.49 & \textbf{10.33} \\
+%\textit{incremental\_fast} & 2,772.65 & 6,853.68 & 1,289.74 & 1,365.93 & 46.19 & \textbf{7.75} \\
+%\textit{incremental\_slow} & 2,343.20 & 7,383.19 & 1,750.39 & 1,401.78 & 40.02 & \textbf{8.07} \\
+%\midrule
+%\textbf{MEAN} & 2,090.17 & 3,499.52 & 3,556.74 & 1,790.64 & 566.95 & \textbf{240.39} \\
+%\bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
+
+
+
+%\begin{figure*}[!thp]
+%  \begin{center}
+%    \includegraphics[width=0.75\textwidth]{experiments/results/plots/inst_inst}
+%  \caption{Final number of instances selected by each method (distribution)}
+%  \label{fig:time-fsel}
+%  \end{center}
+%\end{figure*}
+
+%\begin{table*}[!t]
+%  \caption{\# instances selected by method (IS)} \label{tab:inst-isel}
+%  \centering
+%  \resizebox{.75\textheight}{!}{
+%\begin{tabular}{|l|rrrrrr|}
+%\toprule
+% & \multicolumn{1}{l}{\textbf{NEFCSSRR}} & \multicolumn{1}{l}{\textbf{ICF}} & \multicolumn{1}{l}{\textbf{CBE}} & \multicolumn{1}{l}{\textbf{FISH}} & \multicolumn{1}{l}{\textbf{LearnNSE}} & \multicolumn{1}{l|}{\textbf{kNN}} \\ \hline
+%\textit{elecNormNew} & 1,558 & 3,152 & \textbf{238} & 45,312 & - & 45,312 \\ 
+%\textit{powersupply} & 3,349 & \textbf{1,215} & 3,569 & 29,928 & - & 29,928 \\ 
+%\textit{spambase} & 905 & 1,813 & \textbf{2} & 4,601 & - & 4,601 \\ 
+%\textit{spam\_data} & 927 & 2,087 & \textbf{5} & 9,324 & - & 9,324 \\ 
+%\textit{spam\_nominal} & 934 & 2,001 & \textbf{1} & 800 & - & 800 \\ 
+%\textit{usenet1} & 894 & 311 & \textbf{269} & 1,500 & - & 1,500 \\ 
+%\textit{usenet2} & 903 & 378 & \textbf{334} & 1,500 & - & 1,500 \\ 
+%\textit{usenet\_recurrent} & 990 & \textbf{1} & 5,501 & 5,931 & - & 5,931 \\ 
+%\textit{blips} & 802 & 2,947 & \textbf{57} & 10,000 & - & 10,000 \\ 
+%\textit{sudden\_drift} & 824 & 5,540 & \textbf{227} & 10,000 & - & 10,000 \\ 
+%\textit{gradual\_drift} & 1,584 & 4,547 & \textbf{190} & 10,000 & - & 10,000 \\ 
+%\textit{gradual\_recurring\_drift} & 772 & 2,508 & \textbf{85} & 10,000 & - & 10,000 \\ 
+%\textit{incremental\_fast} & 1,492 & 4,651 & \textbf{244} & 10,000 & - & 10,000 \\ 
+%\textit{incremental\_slow} & 1,298 & 4,539 & \textbf{243} & 10,000 & - & 10,000 \\ 
+%\midrule
+%\textbf{MEAN} & 1,230.86 & 2,549.29 & \textbf{783.21} & 11,349.71 & - & 11,349.71 \\ 
+%\bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
+
+
+\subsection{\textbf{Discretization}}
+\label{subsec:exp-disc}
+
+To evaluate the ability of discretizers to reduce continuous feature space, we propose a new study with two discretizers for data streams. NB has also been used as benchmark to evaluate discretization schemes. In this experiment, we have considered those datasets with at least one numerical attribute. Email-based dataset used in Section~\ref{subsec:fsel} are thus discarded.
+
+Table~\ref{tab:res-disc} and~\ref{tab:wilcoxon-disc} contain test accuracy results for NB classification with and without explicit discretization. From these results, we can conclude the following statements:
+
+\begin{table*}[!t]
+  \caption{Classification test accuracy after discretization} \label{tab:res-disc}
+  \centering
+  \resizebox{.5\textheight}{!}{
+\begin{tabular}{|l|rrr|}
+\toprule
+ & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l|}{\textbf{Na\"ive Bayes}} \\ \hline
+\textit{airlines} & 61.2112 & 55.9120 & \textbf{64.5504} \\ 
+\textit{powersupply} & 2.9237 & \textbf{34.5964} & 16.1087 \\ 
+\textit{elecNormNew} & 42.6532 & 42.9842 & \textbf{73.3625} \\ 
+\textit{spambase} & \textbf{97.8700} & 91.9148 & 82.8081 \\ 
+\textit{kddcup\_10} & 66.6213 & 93.5460 & \textbf{97.1908} \\ 
+\textit{poker-lsn} & 55.1783 & 32.3913 & \textbf{59.5528} \\ 
+\textit{covtypeNorm} & 47.5484 & 4.1266 & \textbf{60.5208} \\ 
+\textit{blips} & 47.1230 & 26.5778 & \textbf{60.9060} \\ 
+\textit{sudden\_drift} & 66.5752 & 60.8494 & \textbf{83.8144} \\ 
+\textit{gradual\_drift} & 51.4210 & 62.1242 & \textbf{84.7000} \\ 
+\textit{gradual\_recurring\_drift} & 37.8390 & 25.7000 & \textbf{56.7450} \\ 
+\textit{incremental\_fast} & 49.3582 & 43.3580 & \textbf{76.3642} \\ 
+\textit{incremental\_slow} & 49.7734 & 49.1084 & \textbf{78.0688} \\ \midrule
+\textbf{MEAN} & 52.0074 & 47.9376 & \textbf{68.8225} \\ 
+\bottomrule
+\end{tabular}
+	}
+\end{table*}
+
+
+\begin{table}[!htp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\scriptsize
+\caption{Wilcoxon test results and average rankings of methods (Friedman Procedure \& Adjusted p-value with Holm's Test) for accuracy}
+\label{tab:wilcoxon-disc}
+\resizebox{0.55\textwidth}{!}{
+\begin{tabular}{lcccccc}
+\hline
+ Algorithms & \multicolumn{2}{c}{Accuracy} & Ranking & $p_{Holm}$ \\
+ & $+$ & $\pm$ & & \\
+\toprule
+Na\"ive Bayes & \cellcolor[gray]{0.8} 2 & \cellcolor[gray]{0.8} 2 & 9.3846 & --\\
+PiD & 0 & 1 & 23.8462 & 0.001222\\
+OC & 0 & 1 & 26.7692 & 0.000203\\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{itemize}
+	\item No method is better than NB + Gaussian estimation (hereafter only NB). Discretization schemes generated by the other two discretizers yield much poorer results, far from those yielded by NB. 
+	\item This fact has been statistically confirmed by non-parametrical tests. $p$-values obtained for OC and PiD ($<0.005$) are much lower than the level of significance established for the Friedman-Holm test ($\alpha = 0.05$).
+	\item The worst case is represented by OC, closely followed by PiD. Poor results can be explained by the fact both discretizers are supervised, and both inherited the problems presented in Section~\ref{subsec:disc}. Furthermore, PiD possesses a long list of parameters to tune. Among them, the minimum and the maximum value for each feature need to be defined, which is quite difficult to guess in streaming environments. This important parameter determines the expansion rate for new intervals.
+\end{itemize}
+
+Apart from the deficiencies related to accuracy, Figure~\ref{fig:time-disc} shows an slow behavior for OC as a result of the high number of data structures (binary tree, several queues, etc.) managed by it. PiD however holds a similar time performance to NB. 
+
+\begin{figure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/time_disc}
+  \caption{Selection time (in seconds)}
+  \label{fig:time-disc}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.\linewidth]{experiments/results/plots/intervals_disc}
+  \caption{Reduction rate (in \# intervals generated)}
+  \label{fig:interv-disc}
+\end{subfigure}
+\caption{Box-plot representation for discretization time and reduction (discretization)}
+\label{fig:disc}
+\end{figure}
+
+Figure~\ref{fig:interv-disc} illustrates the reduction performed by each method, represented as number of intervals generated per method. In this case, PiD's inaccuracy is explained by the huge number of intervals generated by this method at the beginning (around 500 per feature), and during the splitting process --specially when the range specified as input is far from the real value--. Also note that the subsequent merging process launched by the second layer is just not able to reduce such many intervals.
+
+As exposed before, evolving intervals sharply affect streaming classification since new and deleted intervals normally imply dramatic changes in learning. New models and techniques with a better interaction between discretization and learning must be thought if we want to transform online discretization in a truly useful tool for data analytics.
+
+
+%\begin{table*}[!t]
+%  \caption{Discretization time, test accuracy and number of intervals results for all discretizers} \label{tab:res-disc}
+%  \centering
+%  \resizebox{.75\textheight}{!}{
+%\begin{tabular}{|l|rrrrrrrr|}
+%\toprule
+%& \multicolumn{3}{c}{\textbf{Time}} & \multicolumn{3}{c}{\textbf{Accuracy}} & \multicolumn{2}{c|}{\textbf{\# intervals}} \\
+% & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Na\"ive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l}{\textbf{OC}} & \multicolumn{1}{l}{\textbf{Na\"ive Bayes}} & \multicolumn{1}{l}{\textbf{PiD}} & \multicolumn{1}{l|}{\textbf{OC}} \\ \hline
+%\textit{airlines} & 17.53 & 286.57 & \textbf{14.04} & 63.5817 & 63.9015 & \textbf{64.5504} & \textbf{19} & 33 \\ 
+%\textit{powersupply} & 1.11 & 1.31 & \textbf{0.64} & 63.5817 & 63.9015 & \textbf{64.5504} & 1,018 & \textbf{14} \\ 
+%\textit{elecNormNew} & 1.52 & 7.46 & \textbf{0.67} & 42.4545 & 57.1306 & \textbf{73.3625} & 2,041 & \textbf{49} \\ 
+%\textit{spambase} & 0.96 & 1.30 & \textbf{0.50} & \textbf{87.8939} & 84.2426 & 82.8081 & 29,116 & \textbf{228}\\ 
+%\textit{kddcup\_10} & 29.78 & 3,317.92 & \textbf{18.59}  & 20.1164 & 95.4200 & \textbf{97.1908} & 273 & \textbf{418}\\ 
+%\textit{poker-lsn} & 17.29 & 2,280.30 & \textbf{11.72} & 2.6008 & 52.3943 & \textbf{59.5528} & \textbf{54} & 55\\ 
+%\textit{covtypeNorm} & 38.13 & 888.83 & \textbf{28.28} & 54.0197 & 3.1984 & \textbf{60.5208} & \textbf{74} & 110\\ 
+%\textit{blips} & 18.29 & 1,927.32 & \textbf{12.02} & 30.3674 & 26.7278 & \textbf{60.9060} & \textbf{92} & 220 \\ 
+%\textit{sudden\_drift} & 6.05 & 229.00 & \textbf{2.49} & 59.3210 & 78.4012 & \textbf{83.8144} & \textbf{10} & 33 \\ 
+%\textit{gradual\_drift} & 6.09 & 421.11 & \textbf{3.63} & 52.1964 & 76.2868 & \textbf{84.7000} & \textbf{10} & 33\\ 
+%\textit{gradual\_recurring\_drift} & 19.52 & 1,722.27 & \textbf{12.52} & 26.9604 & 28.5176 & \textbf{56.7450} & \textbf{100} & 220 \\ 
+%\textit{incremental\_fast} & 12.24 & 1,039.89 & \textbf{5.68} & 49.9620 & 49.9460 & \textbf{76.3642} & 4,608 & \textbf{110}\\ 
+%\textit{incremental\_slow} & 13.41 & 987.31 & \textbf{6.06} & 49.9966 & 49.9866 & \textbf{78.0688} & 5,120 & \textbf{110}\\ 
+%\midrule
+%\textbf{MEAN} & 13.99 & 1,008.51 & \textbf{8.99} & 41.7651 & 51.3328 & \textbf{68.8225} & 3,271.92 & \textbf{125.62} \\ 
+%\bottomrule
+%\end{tabular}
+%	}
+%\end{table*}
+
+\section{Concluding remarks}
+\label{sec:conclusions}
+
+In this work we have presented a thorough overview of data reduction methods. Basic concepts, existing work, and present and future challenges have been analyzed in this work. Based on type of selection, generation and other relevant characteristics, we have made a simple but useful classification of current developments in online reduction. 
+
+Most relevant methods have also been analyzed empirically through a conscious experimental framework, which includes a long and diverse list of artificial and real datasets with different types of drift. An statistical analysis based on non-parametric tests have been conveyed to support the resulting conclusions. In general, they have served to confirm previous results on predictive performance. 
+
+Some remarkable outcomes and guidelines can be inferred from the study, which we enumerate below:
+
+\begin{itemize}
+
+	\item A wide range of problems, range from concept-evolution to streaming features, affects features in online learning problems. DXMiner is the only system that address all these problem through a combined strategy based on an information-based FS and an unsupervised selection method.
+	\item As expected FS does not improve accuracy results presented by the option with the full set of features. Nevertheless FS solutions are able to yield simpler solutions with similar predictive performance. SU, the selector included in DXMiner, can be elected as the best method for FS because of its outstanding results in accuracy and its low complexity.
+	\item Competence-based methods for IS tend to maintain case-bases polished in the highest degree, free of noise and redundancy. However they bear a high complexity burden. In distance-based solutions, this burden is even heavier, and with similar results in accuracy. In general, all instance selectors have shown a bad behavior on time-usage, thus preventing their application to medium/big prblems.
+	\item CBE can be elected as best option for IS in terms of precision and reduction. NEFCSSRR also arouses as an interesting option, with similar results to CBE but with far better performance.
+	\item A scarce number of online and supervised discretizers has been proposed in the literature so far. Most of methods developed so far are unsupervised techniquyes based on quantiles, which propose an adaptation strategy based on on smooth shifts in intervals' definition.
+	\item Current online discretizers have shown to perform poorly as their adjustments tend to be more abrupt than those yield by quantile-based techniques (see Section~\ref{subsec:disc}). Abrupt tweaks and labellings are two major concerns that must be controlled and solved by further developments in this topic.	
+	\item Finally, notice that no wrapper-based solution has been proposed for online problems yet, which may benefit from the inherent discriminative ability of online learners. 
+\end{itemize}
+
+Concluding this work, we can claim that online reduction is still in its early days. New and more sophisticated methods that deal with previous unsolved challenges need to be designed in next years. Great progress has been made in IS, but other tasks like discretization remains unexplored.
 
 \section*{Acknowlegments}
 
-This work is supported by the Spanish National Research Project TIN2012-37954, TIN2013-47210-P and TIN2014-57251-P, and the Andalusian Research Plan P10-TIC-6858, P11-TIC-7765 and P12-TIC-2958. S. Ram\'irez-Gallego holds a FPU scholarship from the Spanish Ministry of Education and Science (FPU13/00047).
+This work is supported by the Spanish National Research Project TIN2012-37954, TIN2013-47210-P, and the Andalusian Research Plan, P11-TIC-7765. S. Ram\'irez-Gallego holds a FPU scholarship from the Spanish Ministry of Education and Science (FPU13/00047).
+
+\section*{References}
 
 %% The Appendices part is started with the command \appendix;
 %% appendix sections are then done as normal sections
